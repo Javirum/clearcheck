@@ -1,0 +1,182 @@
+[
+  {
+    "id": "misinfo-001",
+    "claim": "5G cell towers cause COVID-19 and spread the virus through radio waves",
+    "category": "health",
+    "verdict": "false",
+    "explanation": "There is no scientific evidence linking 5G technology to COVID-19. The virus is caused by SARS-CoV-2 and spreads through respiratory droplets, not radio waves. Multiple studies and health organizations including the WHO have debunked this claim.",
+    "sources": ["WHO", "Full Fact", "Reuters Fact Check"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-002",
+    "claim": "COVID-19 vaccines contain microchips that allow the government to track people",
+    "category": "health",
+    "verdict": "false",
+    "explanation": "COVID-19 vaccines do not contain microchips or any tracking technology. Vaccine ingredients are publicly listed and verified by regulatory agencies worldwide. This claim has been debunked by the CDC, FDA, and independent fact-checkers.",
+    "sources": ["CDC", "Snopes", "PolitiFact"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-003",
+    "claim": "Drinking bleach or injecting disinfectant can cure COVID-19",
+    "category": "health",
+    "verdict": "false",
+    "explanation": "Ingesting or injecting bleach or disinfectant is extremely dangerous and can cause severe injury or death. No disinfectant product is safe for human consumption. Medical professionals and poison control centers have warned strongly against this.",
+    "sources": ["FDA", "AFP Fact Check", "Snopes"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-004",
+    "claim": "The 2020 US presidential election was stolen through widespread voter fraud involving millions of fake ballots",
+    "category": "politics",
+    "verdict": "false",
+    "explanation": "Multiple audits, recounts, and over 60 court cases found no evidence of widespread voter fraud that could have changed the election outcome. Election officials from both parties, the Department of Homeland Security, and the Attorney General confirmed the election was secure.",
+    "sources": ["AP News", "Reuters", "PolitiFact"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-005",
+    "claim": "Bill Gates created COVID-19 to profit from vaccines and reduce the world population",
+    "category": "conspiracy",
+    "verdict": "false",
+    "explanation": "There is no evidence that Bill Gates or the Bill & Melinda Gates Foundation created or were involved in creating SARS-CoV-2. The Gates Foundation has funded global health initiatives for decades. This conspiracy theory has been thoroughly debunked by multiple fact-checking organizations.",
+    "sources": ["Snopes", "Full Fact", "PolitiFact"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-006",
+    "claim": "Ivermectin is a proven cure for COVID-19 that the medical establishment is hiding",
+    "category": "health",
+    "verdict": "false",
+    "explanation": "Large-scale clinical trials have shown that ivermectin does not provide significant benefit for COVID-19 treatment. While ivermectin is an effective anti-parasitic medication, the FDA, WHO, and major medical organizations advise against using it for COVID-19 outside of clinical trials.",
+    "sources": ["FDA", "WHO", "Reuters Fact Check"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-007",
+    "claim": "Climate change is a hoax invented by scientists to get research funding",
+    "category": "science",
+    "verdict": "false",
+    "explanation": "The scientific consensus on human-caused climate change is supported by over 97% of climate scientists and every major scientific organization worldwide. Decades of peer-reviewed research confirm that human activities are driving global warming.",
+    "sources": ["NASA", "IPCC", "Snopes"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-008",
+    "claim": "Eating garlic or drinking hot water prevents and cures COVID-19",
+    "category": "health",
+    "verdict": "false",
+    "explanation": "While garlic has some antimicrobial properties, there is no evidence it can prevent or cure COVID-19. Similarly, drinking hot water does not kill the virus. The WHO has specifically addressed and debunked these home remedy claims.",
+    "sources": ["WHO", "AFP Fact Check", "Full Fact"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-009",
+    "claim": "The moon landings were faked by NASA and filmed in a Hollywood studio",
+    "category": "conspiracy",
+    "verdict": "false",
+    "explanation": "The Apollo moon landings (1969-1972) are among the most well-documented events in history. Physical evidence includes lunar samples, retroreflectors still used by scientists, and independent verification by multiple countries including the Soviet Union. Tens of thousands of engineers and scientists worked on the program.",
+    "sources": ["NASA", "Snopes", "National Geographic"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-010",
+    "claim": "Vaccines cause autism in children, as proven by Andrew Wakefield's study",
+    "category": "health",
+    "verdict": "false",
+    "explanation": "Andrew Wakefield's 1998 study was retracted due to serious ethical violations and data manipulation. He lost his medical license. Dozens of large-scale studies involving millions of children have found no link between vaccines and autism.",
+    "sources": ["CDC", "The Lancet (retraction)", "Snopes"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-011",
+    "claim": "Social Security will run out of money completely and all payments will stop",
+    "category": "politics",
+    "verdict": "misleading",
+    "explanation": "While Social Security's trust fund reserves are projected to be depleted, this does not mean payments will stop entirely. Ongoing payroll taxes would still fund about 75-80% of scheduled benefits. The program faces funding challenges but will not disappear completely.",
+    "sources": ["Social Security Administration", "PolitiFact", "FactCheck.org"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-012",
+    "claim": "You can tell a deepfake video by looking for blinking — deepfakes never blink",
+    "category": "technology",
+    "verdict": "misleading",
+    "explanation": "While early deepfake technology (2018) often failed to replicate natural blinking, modern deepfake models have largely overcome this limitation. Lack of blinking is no longer a reliable indicator. Current detection requires more sophisticated analysis.",
+    "sources": ["MIT Technology Review", "Reuters", "AFP Fact Check"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-013",
+    "claim": "Artificial sweeteners like aspartame are just as dangerous as sugar and cause cancer",
+    "category": "health",
+    "verdict": "misleading",
+    "explanation": "Major health agencies including the FDA, EFSA, and WHO have reviewed extensive evidence and maintain that aspartame is safe at approved consumption levels. The IARC classified it as 'possibly carcinogenic' but the WHO/JECFA maintained current safe intake levels. The evidence does not show it is 'just as dangerous as sugar.'",
+    "sources": ["WHO", "FDA", "Snopes"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-014",
+    "claim": "The Great Wall of China is the only man-made structure visible from space",
+    "category": "general",
+    "verdict": "false",
+    "explanation": "The Great Wall of China is not visible from space with the naked eye, as confirmed by multiple astronauts including Chinese astronaut Yang Liwei. The wall is very long but too narrow (about 15-30 feet wide) to be seen from orbital distances.",
+    "sources": ["NASA", "Snopes", "National Geographic"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-015",
+    "claim": "Immigrants are responsible for most violent crime in the United States",
+    "category": "politics",
+    "verdict": "false",
+    "explanation": "Multiple peer-reviewed studies consistently show that immigrants, including undocumented immigrants, commit crimes at lower rates than native-born citizens. The Cato Institute, National Academy of Sciences, and numerous criminological studies have confirmed this finding.",
+    "sources": ["Cato Institute", "PolitiFact", "FactCheck.org"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-016",
+    "claim": "Wind turbines cause cancer through infrasound vibrations",
+    "category": "science",
+    "verdict": "false",
+    "explanation": "There is no scientific evidence that wind turbines cause cancer. Multiple studies and health reviews from Australia, Canada, and Europe have found no causal link between wind turbine noise or infrasound and cancer or other serious health effects.",
+    "sources": ["Cancer Council Australia", "PolitiFact", "Snopes"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-017",
+    "claim": "Microwaving food in plastic containers releases cancer-causing dioxins",
+    "category": "health",
+    "verdict": "misleading",
+    "explanation": "Dioxins are not present in plastics and are not created by microwave heating. However, some plastics can release harmful chemicals when heated. The FDA tests and approves microwave-safe containers. Using non-microwave-safe plastics can be problematic, but the dioxin claim specifically is false.",
+    "sources": ["FDA", "Snopes", "AFP Fact Check"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-018",
+    "claim": "The government adds fluoride to water for mind control purposes",
+    "category": "conspiracy",
+    "verdict": "false",
+    "explanation": "Water fluoridation has been practiced since 1945 to prevent tooth decay and is supported by the WHO, ADA, and CDC as safe and effective. Fluoride at recommended levels has no effect on brain function or behavior. Decades of research support its safety profile.",
+    "sources": ["CDC", "WHO", "Snopes"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-019",
+    "claim": "You only use 10% of your brain and unlocking the rest gives superhuman abilities",
+    "category": "science",
+    "verdict": "false",
+    "explanation": "Brain imaging studies clearly show that virtually all parts of the brain have known functions and are active over a 24-hour period. While not all neurons fire simultaneously, there is no large unused reserve. This myth has been debunked by neuroscientists repeatedly.",
+    "sources": ["Scientific American", "Snopes", "National Geographic"],
+    "date_added": "2024-01-15"
+  },
+  {
+    "id": "misinfo-020",
+    "claim": "Email forwards about missing children should always be shared because it helps find them",
+    "category": "general",
+    "verdict": "misleading",
+    "explanation": "While sharing legitimate missing child alerts (like AMBER Alerts) can help, many viral email forwards and social media posts about missing children are outdated, hoaxes, or scams. They can waste law enforcement resources and cause distress. Always verify through official sources like the National Center for Missing & Exploited Children before sharing.",
+    "sources": ["Snopes", "NCMEC", "AFP Fact Check"],
+    "date_added": "2024-01-15"
+  }
+]

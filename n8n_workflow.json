@@ -1,0 +1,79 @@
+{
+  "id": "1",
+  "name": "ClearCheck — Misinformation Verifier",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "chat-trigger",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [200, 300],
+      "webhookId": "clearcheck-chat"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/check",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ claim: $json.chatInput }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "call-clearcheck-api",
+      "name": "Call ClearCheck API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the API response as a readable chat message\nconst data = $input.first().json;\n\nconst emoji = data.emoji || '🔍';\nconst label = data.label || data.verdict;\nconst confidence = Math.round((data.confidence || 0) * 100);\nconst explanation = data.explanation || 'No explanation available.';\nconst tip = data.educational_tip || '';\nconst sources = data.sources || [];\nconst evidence = data.evidence_summary || {};\nconst responseTime = data.response_time_seconds || 0;\n\n// Build the formatted message\nlet message = `${emoji} **${label}** (${confidence}% confidence)\\n\\n`;\nmessage += `${explanation}\\n\\n`;\n\n// Sources section\nif (sources.length > 0) {\n  message += `📋 **Sources:**\\n`;\n  for (const source of sources) {\n    message += `• **${source.name}** — ${source.snippet}`;\n    if (source.url) {\n      message += ` ([link](${source.url}))`;\n    }\n    message += `\\n`;\n  }\n  message += `\\n`;\n}\n\n// Educational tip\nif (tip) {\n  message += `💡 **Tip:** ${tip}\\n\\n`;\n}\n\n// Evidence summary\nmessage += `---\\n`;\nmessage += `_Checked ${evidence.knowledge_base_matches || 0} known patterns, `;\nmessage += `${evidence.web_search_results || 0} web sources, `;\nmessage += `${evidence.published_fact_checks || 0} published fact-checks `;\nmessage += `in ${responseTime}s_`;\n\nreturn [{ json: { output: message } }];"
+      },
+      "id": "format-response",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    }
+  ],
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call ClearCheck API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call ClearCheck API": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "ClearCheck"
+    }
+  ]
+}

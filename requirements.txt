@@ -1,0 +1,29 @@
+# Core LLM
+anthropic>=0.40.0
+
+# LangGraph & LangChain
+langgraph>=0.2.0
+langchain-anthropic>=0.3.0
+langchain-openai>=0.2.0
+langchain-pinecone>=0.2.0
+langchain-core>=0.3.0
+
+# Vector Store
+pinecone==5.4.2
+
+# Web Search
+tavily-python>=0.5.0
+
+# Output Validation
+pydantic>=2.9.0
+
+# API Server (called by N8N)
+fastapi>=0.115.0
+uvicorn>=0.32.0
+
+# Database
+# SQLite is built into Python stdlib
+
+# Utilities
+requests>=2.32.0
+python-dotenv>=1.0.0

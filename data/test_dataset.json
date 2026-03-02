@@ -1,0 +1,122 @@
+[
+  {
+    "id": "test-001",
+    "claim": "5G towers spread COVID-19 through electromagnetic radiation",
+    "expected_verdict": "false",
+    "category": "health"
+  },
+  {
+    "id": "test-002",
+    "claim": "COVID vaccines contain tracking microchips implanted by Bill Gates",
+    "expected_verdict": "false",
+    "category": "health"
+  },
+  {
+    "id": "test-003",
+    "claim": "The 2020 election was stolen through millions of fraudulent ballots",
+    "expected_verdict": "false",
+    "category": "politics"
+  },
+  {
+    "id": "test-004",
+    "claim": "Climate change is a hoax made up by scientists for grant money",
+    "expected_verdict": "false",
+    "category": "science"
+  },
+  {
+    "id": "test-005",
+    "claim": "Drinking bleach can cure COVID-19",
+    "expected_verdict": "false",
+    "category": "health"
+  },
+  {
+    "id": "test-006",
+    "claim": "The moon landings were faked by NASA in a Hollywood studio",
+    "expected_verdict": "false",
+    "category": "conspiracy"
+  },
+  {
+    "id": "test-007",
+    "claim": "Vaccines cause autism, as proven by a famous 1998 medical study",
+    "expected_verdict": "false",
+    "category": "health"
+  },
+  {
+    "id": "test-008",
+    "claim": "Wind turbines are known to cause cancer in people living nearby",
+    "expected_verdict": "false",
+    "category": "science"
+  },
+  {
+    "id": "test-009",
+    "claim": "Immigrants commit violent crime at higher rates than native-born citizens in the US",
+    "expected_verdict": "false",
+    "category": "politics"
+  },
+  {
+    "id": "test-010",
+    "claim": "Fluoride is added to tap water by the government for mind control",
+    "expected_verdict": "false",
+    "category": "conspiracy"
+  },
+  {
+    "id": "test-011",
+    "claim": "The Earth orbits the Sun and takes approximately 365.25 days to complete one orbit",
+    "expected_verdict": "true",
+    "category": "science"
+  },
+  {
+    "id": "test-012",
+    "claim": "The World Health Organization declared COVID-19 a pandemic in March 2020",
+    "expected_verdict": "true",
+    "category": "health"
+  },
+  {
+    "id": "test-013",
+    "claim": "Regular physical exercise reduces the risk of heart disease",
+    "expected_verdict": "true",
+    "category": "health"
+  },
+  {
+    "id": "test-014",
+    "claim": "Smoking tobacco increases the risk of lung cancer",
+    "expected_verdict": "true",
+    "category": "health"
+  },
+  {
+    "id": "test-015",
+    "claim": "Water boils at 100 degrees Celsius at standard atmospheric pressure",
+    "expected_verdict": "true",
+    "category": "science"
+  },
+  {
+    "id": "test-016",
+    "claim": "The Great Wall of China is visible from space with the naked eye",
+    "expected_verdict": "false",
+    "category": "general"
+  },
+  {
+    "id": "test-017",
+    "claim": "Social Security will completely run out of money and all payments will stop forever",
+    "expected_verdict": "misleading",
+    "category": "politics"
+  },
+  {
+    "id": "test-018",
+    "claim": "A new study from the University of Atlantis proves that eating chocolate daily reverses aging by 20 years",
+    "expected_verdict": "uncertain",
+    "category": "health"
+  },
+  {
+    "id": "test-019",
+    "claim": "A leaked government memo confirms that birds are actually surveillance drones replaced in the 1970s",
+    "expected_verdict": "uncertain",
+    "category": "conspiracy"
+  },
+  {
+    "id": "test-020",
+    "claim": "Scientists at an unnamed laboratory have discovered a mineral that generates unlimited free energy",
+    "expected_verdict": "uncertain",
+    "category": "science"
+  }
+]
