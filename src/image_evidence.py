@@ -55,10 +55,10 @@ def extract_metadata(image_bytes: bytes) -> ImageMetadata:
 # ---------------------------------------------------------------------------
 
 def reverse_image_search(
-    image_b64: str, user_context: str
+    image_b64: str, user_context: str, image_url: str | None = None,
 ) -> list[ReverseImageResult]:
-    if SERPAPI_API_KEY:
-        return _serpapi_google_lens(image_b64)
+    if SERPAPI_API_KEY and image_url:
+        return _serpapi_google_lens(image_url)
     return _tavily_fallback(user_context)
 
 
@@ -66,12 +66,11 @@ def reverse_image_search(
     max_attempts=2,
     transient_exceptions=(ConnectionError, TimeoutError, requests.ConnectionError, requests.Timeout),
 )
-def _serpapi_google_lens(image_b64: str) -> list[ReverseImageResult]:
+def _serpapi_google_lens(image_url: str) -> list[ReverseImageResult]:
     """Use SerpAPI Google Lens to find visually similar images."""
-    data_uri = f"data:image/jpeg;base64,{image_b64}"
     params = {
         "engine": "google_lens",
-        "url": data_uri,
+        "url": image_url,
         "api_key": SERPAPI_API_KEY,
     }
     resp = requests.get(
@@ -126,7 +125,7 @@ def _tavily_fallback(user_context: str) -> list[ReverseImageResult]:
 # ---------------------------------------------------------------------------
 
 def gather_image_evidence(
-    image_bytes: bytes, image_b64: str, user_context: str
+    image_bytes: bytes, image_b64: str, user_context: str, image_url: str | None = None,
 ) -> ImageEvidence:
     """Run metadata extraction and reverse search in parallel."""
     evidence = ImageEvidence()
@@ -146,7 +145,7 @@ def gather_image_evidence(
 
     def _reverse_search():
         try:
-            return reverse_image_search(image_b64, user_context)
+            return reverse_image_search(image_b64, user_context, image_url=image_url)
         except requests.HTTPError as e:
             status = e.response.status_code if e.response is not None else "unknown"
             errors.append(f"Reverse image search HTTP error ({status}): {e}")
