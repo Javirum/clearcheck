@@ -2,37 +2,53 @@
 
 from __future__ import annotations
 
-import asyncio
-import traceback
-from concurrent.futures import ThreadPoolExecutor
+import json
+import logging
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
+import anthropic
 import requests
-from openai import OpenAI
+from openai import OpenAI, APIError as OpenAIAPIError, APITimeoutError as OpenAITimeoutError
 from pinecone import Pinecone
+from pinecone.exceptions import PineconeException
 from tavily import TavilyClient
 
 from src.config import (
+    ANTHROPIC_API_KEY,
     OPENAI_API_KEY,
     PINECONE_API_KEY,
     PINECONE_INDEX_NAME,
     TAVILY_API_KEY,
     GOOGLE_FACTCHECK_API_KEY,
     EMBEDDING_MODEL,
+    LLM_MODEL,
 )
+from src.retry import retry
 from src.schemas import (
     FactCheckResult,
     GatheredEvidence,
+    ImageAnalysisResult,
     PineconeResult,
     TavilyResult,
 )
+
+logger = logging.getLogger("nope.evidence")
 
 
 # ---------------------------------------------------------------------------
 # Pinecone knowledge base search
 # ---------------------------------------------------------------------------
 
+@retry(
+    max_attempts=2,
+    transient_exceptions=(ConnectionError, TimeoutError, PineconeException, OpenAITimeoutError),
+)
 def query_pinecone(claim: str, top_k: int = 5) -> list[PineconeResult]:
-    openai_client = OpenAI(api_key=OPENAI_API_KEY)
+    if not PINECONE_API_KEY or not OPENAI_API_KEY:
+        logger.warning("Pinecone or OpenAI API key not configured, skipping")
+        return []
+
+    openai_client = OpenAI(api_key=OPENAI_API_KEY, timeout=10)
     response = openai_client.embeddings.create(input=claim, model=EMBEDDING_MODEL)
     query_embedding = response.data[0].embedding
 
@@ -53,7 +69,7 @@ def query_pinecone(claim: str, top_k: int = 5) -> list[PineconeResult]:
             metadata=match.metadata,
         )
         for match in results.matches
-        if match.score > 0.7  # Only return relevant matches
+        if match.score > 0.7
     ]
 
 
@@ -61,7 +77,12 @@ def query_pinecone(claim: str, top_k: int = 5) -> list[PineconeResult]:
 # Tavily web search
 # ---------------------------------------------------------------------------
 
+@retry(max_attempts=2, transient_exceptions=(ConnectionError, TimeoutError))
 def search_tavily(claim: str, max_results: int = 5) -> list[TavilyResult]:
+    if not TAVILY_API_KEY:
+        logger.warning("Tavily API key not configured, skipping")
+        return []
+
     client = TavilyClient(api_key=TAVILY_API_KEY)
     response = client.search(
         query=f"fact check: {claim}",
@@ -84,7 +105,15 @@ def search_tavily(claim: str, max_results: int = 5) -> list[TavilyResult]:
 # Google Fact Check API
 # ---------------------------------------------------------------------------
 
+@retry(
+    max_attempts=2,
+    transient_exceptions=(ConnectionError, TimeoutError, requests.ConnectionError, requests.Timeout),
+)
 def search_factcheck(claim: str) -> list[FactCheckResult]:
+    if not GOOGLE_FACTCHECK_API_KEY:
+        logger.warning("Google Fact Check API key not configured, skipping")
+        return []
+
     url = "https://factchecktools.googleapis.com/v1alpha1/claims:search"
     params = {"query": claim, "key": GOOGLE_FACTCHECK_API_KEY, "languageCode": "en"}
 
@@ -107,20 +136,106 @@ def search_factcheck(claim: str) -> list[FactCheckResult]:
 
 
 # ---------------------------------------------------------------------------
+# Image analysis via Claude Vision
+# ---------------------------------------------------------------------------
+
+IMAGE_EVIDENCE_PROMPT = """\
+Determine whether this image is AI-generated or a real photograph. Return a JSON object with these fields:
+{
+  "description": "<brief description of what the image shows>",
+  "ai_generation_signals": ["<signal 1>", ...],
+  "manipulation_signals": [],
+  "authenticity_assessment": "<either 'Likely AI-generated' or 'Likely authentic photograph' with brief reasoning>",
+  "confidence": <0.0 to 1.0>
+}
+
+Focus specifically on signs of AI generation:
+- Hands/fingers: extra digits, fused fingers, impossible joint angles, inconsistent finger lengths
+- Textures: overly smooth skin, plastic-like surfaces, repetitive fabric patterns, unnatural hair strands
+- Text: warped, misspelled, or nonsensical text in signs, labels, or clothing
+- Lighting: inconsistent shadow directions, light sources that don't match, unnatural reflections
+- Anatomy: asymmetric facial features, ears that don't match, teeth irregularities, distorted body proportions
+- Background: warping or bending of straight lines, blurred or melting objects, repeating patterns
+- Overall quality: a "too perfect" or hyperreal quality, lack of natural camera noise/grain
+
+If no AI generation signals are found, return an empty ai_generation_signals list and state the image appears authentic.
+
+Return ONLY the JSON object, no other text."""
+
+
+@retry(
+    max_attempts=2,
+    transient_exceptions=(
+        ConnectionError, TimeoutError,
+        anthropic.APIConnectionError, anthropic.RateLimitError,
+        anthropic.InternalServerError,
+    ),
+)
+def analyze_image(image_b64: str, media_type: str) -> ImageAnalysisResult:
+    """Use Claude Vision to analyze an image for AI generation signals."""
+    if not ANTHROPIC_API_KEY:
+        raise ValueError("Anthropic API key not configured")
+
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, timeout=60.0)
+
+    response = client.messages.create(
+        model=LLM_MODEL,
+        max_tokens=1000,
+        temperature=0,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": media_type,
+                            "data": image_b64,
+                        },
+                    },
+                    {"type": "text", "text": IMAGE_EVIDENCE_PROMPT},
+                ],
+            }
+        ],
+    )
+
+    text = response.content[0].text.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        text = "\n".join(lines)
+    data = json.loads(text)
+    return ImageAnalysisResult(**data)
+
+
+# ---------------------------------------------------------------------------
 # Parallel evidence gathering
 # ---------------------------------------------------------------------------
 
-def gather_evidence(claim: str) -> GatheredEvidence:
-    """Run all three evidence sources in parallel and merge results."""
+def gather_evidence(
+    claim: str,
+    image_b64: str | None = None,
+    media_type: str | None = None,
+) -> GatheredEvidence:
+    """Run evidence sources in parallel. Includes image analysis if provided."""
     evidence = GatheredEvidence()
     errors: list[str] = []
 
     def _pinecone():
         try:
             return query_pinecone(claim)
+        except (OpenAIAPIError, OpenAITimeoutError) as e:
+            errors.append(f"OpenAI embedding error: {e}")
+            logger.error("OpenAI embedding failed: %s", e)
+            return []
+        except PineconeException as e:
+            errors.append(f"Pinecone error: {e}")
+            logger.error("Pinecone query failed: %s", e)
+            return []
         except Exception as e:
             errors.append(f"Pinecone error: {e}")
-            traceback.print_exc()
+            logger.exception("Unexpected error in Pinecone search")
             return []
 
     def _tavily():
@@ -128,25 +243,83 @@ def gather_evidence(claim: str) -> GatheredEvidence:
             return search_tavily(claim)
         except Exception as e:
             errors.append(f"Tavily error: {e}")
-            traceback.print_exc()
+            logger.exception("Tavily search failed")
             return []
 
     def _factcheck():
         try:
             return search_factcheck(claim)
+        except requests.HTTPError as e:
+            status = e.response.status_code if e.response is not None else "unknown"
+            errors.append(f"Google Fact Check API error (HTTP {status}): {e}")
+            logger.error("Google Fact Check API HTTP error %s: %s", status, e)
+            return []
+        except (requests.ConnectionError, requests.Timeout) as e:
+            errors.append(f"Google Fact Check API connection error: {e}")
+            logger.error("Google Fact Check API connection failed: %s", e)
+            return []
         except Exception as e:
             errors.append(f"Google Fact Check error: {e}")
-            traceback.print_exc()
+            logger.exception("Unexpected error in Google Fact Check")
             return []
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    def _image_analysis():
+        try:
+            return analyze_image(image_b64, media_type)
+        except anthropic.AuthenticationError as e:
+            errors.append(f"Image analysis auth error: invalid API key")
+            logger.error("Anthropic auth failed for image analysis: %s", e)
+            return None
+        except anthropic.RateLimitError as e:
+            errors.append(f"Image analysis rate limited, please try again later")
+            logger.warning("Anthropic rate limit hit for image analysis: %s", e)
+            return None
+        except (anthropic.APIConnectionError, anthropic.InternalServerError) as e:
+            errors.append(f"Image analysis service unavailable: {e}")
+            logger.error("Anthropic API error for image analysis: %s", e)
+            return None
+        except (json.JSONDecodeError, ValueError) as e:
+            errors.append(f"Image analysis returned invalid response: {e}")
+            logger.error("Failed to parse image analysis response: %s", e)
+            return None
+        except Exception as e:
+            errors.append(f"Image analysis error: {e}")
+            logger.exception("Unexpected error in image analysis")
+            return None
+
+    has_image = image_b64 and media_type
+    max_workers = 4 if has_image else 3
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         pinecone_future = executor.submit(_pinecone)
         tavily_future = executor.submit(_tavily)
         factcheck_future = executor.submit(_factcheck)
+        image_future = executor.submit(_image_analysis) if has_image else None
 
-        evidence.pinecone_results = pinecone_future.result(timeout=15)
-        evidence.tavily_results = tavily_future.result(timeout=15)
-        evidence.factcheck_results = factcheck_future.result(timeout=15)
+        try:
+            evidence.pinecone_results = pinecone_future.result(timeout=15)
+        except FuturesTimeoutError:
+            errors.append("Pinecone search timed out")
+            logger.error("Pinecone search exceeded 15s timeout")
+
+        try:
+            evidence.tavily_results = tavily_future.result(timeout=15)
+        except FuturesTimeoutError:
+            errors.append("Tavily search timed out")
+            logger.error("Tavily search exceeded 15s timeout")
+
+        try:
+            evidence.factcheck_results = factcheck_future.result(timeout=15)
+        except FuturesTimeoutError:
+            errors.append("Google Fact Check search timed out")
+            logger.error("Google Fact Check exceeded 15s timeout")
+
+        if image_future:
+            try:
+                evidence.image_analysis = image_future.result(timeout=30)
+            except FuturesTimeoutError:
+                errors.append("Image analysis timed out")
+                logger.error("Image analysis exceeded 30s timeout")
 
     evidence.errors = errors
     return evidence

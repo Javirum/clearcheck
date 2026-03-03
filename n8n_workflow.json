@@ -1,11 +1,13 @@
 {
   "id": "1",
-  "name": "ClearCheck — Misinformation Verifier",
+  "name": "NOPE — Misinformation Verifier",
   "nodes": [
     {
       "parameters": {
         "options": {
-          "allowedOrigins": "*"
+          "allowedOrigins": "*",
+          "allowFileUploads": true,
+          "allowedFilesMimeTypes": "image/jpeg,image/png,image/gif,image/webp"
         }
       },
       "id": "chat-trigger",
@@ -13,7 +15,46 @@
       "type": "@n8n/n8n-nodes-langchain.chatTrigger",
       "typeVersion": 1.1,
       "position": [200, 300],
-      "webhookId": "clearcheck-chat"
+      "webhookId": "nope-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Detect if binary data (uploaded file) is present and pass it through\nconst item = $input.first();\nconst hasBinary = item.binary && Object.keys(item.binary).length > 0;\nconst output = { json: { ...item.json, hasImage: hasBinary } };\nif (hasBinary) {\n  output.binary = item.binary;\n}\nreturn [output];"
+      },
+      "id": "detect-image",
+      "name": "Detect Image",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "has-image",
+              "leftValue": "={{ $json.hasImage }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-for-image",
+      "name": "Has Image?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [600, 300]
     },
     {
       "parameters": {
@@ -21,26 +62,56 @@
         "url": "http://127.0.0.1:8000/check",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ claim: $json.chatInput }) }}",
+        "jsonBody": "={{ JSON.stringify({ claim: $('Chat Trigger').first().json.chatInput }) }}",
         "options": {
           "timeout": 120000
         }
       },
-      "id": "call-clearcheck-api",
-      "name": "Call ClearCheck API",
+      "id": "call-text-api",
+      "name": "Check Text Only",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [450, 300]
+      "position": [850, 450]
     },
     {
       "parameters": {
-        "jsCode": "// Format the API response as a readable chat message\nconst data = $input.first().json;\n\nconst emoji = data.emoji || '🔍';\nconst label = data.label || data.verdict;\nconst confidence = Math.round((data.confidence || 0) * 100);\nconst explanation = data.explanation || 'No explanation available.';\nconst tip = data.educational_tip || '';\nconst sources = data.sources || [];\nconst evidence = data.evidence_summary || {};\nconst responseTime = data.response_time_seconds || 0;\n\n// Build the formatted message\nlet message = `${emoji} **${label}** (${confidence}% confidence)\\n\\n`;\nmessage += `${explanation}\\n\\n`;\n\n// Sources section\nif (sources.length > 0) {\n  message += `📋 **Sources:**\\n`;\n  for (const source of sources) {\n    message += `• **${source.name}** — ${source.snippet}`;\n    if (source.url) {\n      message += ` ([link](${source.url}))`;\n    }\n    message += `\\n`;\n  }\n  message += `\\n`;\n}\n\n// Educational tip\nif (tip) {\n  message += `💡 **Tip:** ${tip}\\n\\n`;\n}\n\n// Evidence summary\nmessage += `---\\n`;\nmessage += `_Checked ${evidence.knowledge_base_matches || 0} known patterns, `;\nmessage += `${evidence.web_search_results || 0} web sources, `;\nmessage += `${evidence.published_fact_checks || 0} published fact-checks `;\nmessage += `in ${responseTime}s_`;\n\nreturn [{ json: { output: message } }];"
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/check-with-image",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formData",
+              "name": "claim",
+              "value": "={{ $('Chat Trigger').first().json.chatInput }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data0"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "call-image-api",
+      "name": "Check With Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 150]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the API response as a readable chat message\nconst data = $input.first().json;\n\nconst emoji = data.emoji || '🔍';\nconst label = data.label || data.verdict;\nconst confidence = Math.round((data.confidence || 0) * 100);\nconst explanation = data.explanation || 'No explanation available.';\nconst tip = data.educational_tip || '';\nconst sources = data.sources || [];\nconst evidence = data.evidence_summary || {};\nconst responseTime = data.response_time_seconds || 0;\nconst imageAnalysis = data.image_analysis || null;\n\n// Build the formatted message\nlet message = `${emoji} **${label}** (${confidence}% confidence)\\n\\n`;\nmessage += `${explanation}\\n\\n`;\n\n// Image analysis section (if present)\nif (imageAnalysis) {\n  message += `🖼️ **Image Analysis:**\\n`;\n  message += `${imageAnalysis.description}\\n`;\n  message += `Authenticity: ${imageAnalysis.authenticity_assessment}\\n`;\n  const aiSignals = imageAnalysis.ai_generation_signals || [];\n  const manipSignals = imageAnalysis.manipulation_signals || [];\n  if (aiSignals.length > 0) {\n    message += `\\n🤖 **AI Generation Signals:**\\n`;\n    for (const signal of aiSignals) {\n      message += `• ${signal}\\n`;\n    }\n  }\n  if (manipSignals.length > 0) {\n    message += `\\n🖌️ **Manipulation Signals:**\\n`;\n    for (const signal of manipSignals) {\n      message += `• ${signal}\\n`;\n    }\n  }\n  message += `\\n`;\n}\n\n// Sources section\nif (sources.length > 0) {\n  message += `📋 **Sources:**\\n`;\n  for (const source of sources) {\n    message += `• **${source.name}** — ${source.snippet}`;\n    if (source.url) {\n      message += ` ([link](${source.url}))`;\n    }\n    message += `\\n`;\n  }\n  message += `\\n`;\n}\n\n// Educational tip\nif (tip) {\n  message += `💡 **Tip:** ${tip}\\n\\n`;\n}\n\n// Evidence summary\nmessage += `---\\n`;\nmessage += `_Checked ${evidence.knowledge_base_matches || 0} known patterns, `;\nmessage += `${evidence.web_search_results || 0} web sources, `;\nmessage += `${evidence.published_fact_checks || 0} published fact-checks`;\nif (evidence.image_analyzed) {\n  message += `, plus image analysis`;\n}\nmessage += ` in ${responseTime}s_`;\n\nreturn [{ json: { output: message } }];"
       },
       "id": "format-response",
       "name": "Format Response",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [700, 300]
+      "position": [1100, 300]
     }
   ],
   "connections": {
@@ -48,14 +119,54 @@
       "main": [
         [
           {
-            "node": "Call ClearCheck API",
+            "node": "Detect Image",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Call ClearCheck API": {
+    "Detect Image": {
+      "main": [
+        [
+          {
+            "node": "Has Image?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Image?": {
+      "main": [
+        [
+          {
+            "node": "Check With Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Text Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Text Only": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check With Image": {
       "main": [
         [
           {
@@ -73,7 +184,7 @@
   },
   "tags": [
     {
-      "name": "ClearCheck"
+      "name": "NOPE"
     }
   ]
 }

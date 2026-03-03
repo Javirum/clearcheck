@@ -1,0 +1,118 @@
+{
+  "id": "2",
+  "name": "NOPE — Image Authenticity Checker",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nope-image",
+        "options": {
+          "rawBody": true
+        },
+        "responseMode": "responseNode"
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "nope-image"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:8000/check-image",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "parameterType": "formData",
+              "name": "context",
+              "value": "={{ $json.body?.context || '' }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "call-image-api",
+      "name": "Call NOPE Image API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the image check API response as a readable message\nconst data = $input.first().json;\n\nconst emoji = data.emoji || '🔍';\nconst label = data.label || data.verdict;\nconst confidence = Math.round((data.confidence || 0) * 100);\nconst description = data.description || 'No description available.';\nconst explanation = data.explanation || 'No explanation available.';\nconst tip = data.educational_tip || '';\nconst sources = data.sources || [];\nconst aiSignals = data.ai_generation_signals || [];\nconst manipSignals = data.manipulation_signals || [];\nconst contextAnalysis = data.context_analysis || '';\nconst evidence = data.evidence_summary || {};\nconst responseTime = data.response_time_seconds || 0;\n\nlet message = `${emoji} **${label}** (${confidence}% confidence)\\n\\n`;\nmessage += `**Image:** ${description}\\n\\n`;\nmessage += `${explanation}\\n\\n`;\n\n// AI generation signals\nif (aiSignals.length > 0) {\n  message += `🤖 **AI Generation Signals:**\\n`;\n  for (const signal of aiSignals) {\n    message += `• ${signal}\\n`;\n  }\n  message += `\\n`;\n}\n\n// Manipulation signals\nif (manipSignals.length > 0) {\n  message += `🖌️ **Manipulation Signals:**\\n`;\n  for (const signal of manipSignals) {\n    message += `• ${signal}\\n`;\n  }\n  message += `\\n`;\n}\n\n// Context analysis\nif (contextAnalysis) {\n  message += `🔄 **Context Analysis:** ${contextAnalysis}\\n\\n`;\n}\n\n// Sources section\nif (sources.length > 0) {\n  message += `📋 **Sources:**\\n`;\n  for (const source of sources) {\n    message += `• **${source.name}** — ${source.snippet}`;\n    if (source.url) {\n      message += ` ([link](${source.url}))`;\n    }\n    message += `\\n`;\n  }\n  message += `\\n`;\n}\n\n// Educational tip\nif (tip) {\n  message += `💡 **Tip:** ${tip}\\n\\n`;\n}\n\n// Evidence summary\nmessage += `---\\n`;\nmessage += `_Checked ${evidence.reverse_search_results || 0} reverse image sources `;\nmessage += `in ${responseTime}s_`;\n\nreturn [{ json: { output: message } }];"
+      },
+      "id": "format-image-response",
+      "name": "Format Image Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ output: $json.output }) }}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [950, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call NOPE Image API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call NOPE Image API": {
+      "main": [
+        [
+          {
+            "node": "Format Image Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Image Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "NOPE"
+    }
+  ]
+}

@@ -8,9 +8,10 @@ load_dotenv()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY", "")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "clearcheck")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "nope")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "")
 GOOGLE_FACTCHECK_API_KEY = os.getenv("GOOGLE_FACTCHECK_API_KEY", "")
+SERPAPI_API_KEY = os.getenv("SERPAPI_API_KEY", "")
 
 EMBEDDING_MODEL = "text-embedding-3-small"
 EMBEDDING_DIMENSION = 1536

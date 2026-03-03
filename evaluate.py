@@ -1,4 +1,4 @@
-"""Evaluate ClearCheck against the test dataset and report metrics."""
+"""Evaluate NOPE against the test dataset and report metrics."""
 
 import json
 import time

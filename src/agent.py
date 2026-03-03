@@ -1,13 +1,17 @@
-"""LangGraph agent for ClearCheck: Claude analysis + LLM validation."""
+"""LangGraph agent for NOPE: Claude analysis + LLM validation."""
 
 from __future__ import annotations
 
 import json
+import logging
 
+import anthropic
 from langchain_anthropic import ChatAnthropic
 from langgraph.graph import END, StateGraph
 
 from src.config import ANTHROPIC_API_KEY, LLM_MODEL, LLM_MODEL_FAST
+
+logger = logging.getLogger("nope.agent")
 from src.evidence import gather_evidence
 from src.schemas import (
     AgentState,
@@ -22,8 +26,12 @@ from src.schemas import (
 # ---------------------------------------------------------------------------
 
 ANALYSIS_PROMPT = """\
-You are ClearCheck, a fact-checking assistant designed for older adults (55+).
-Your job is to analyze a claim using evidence from multiple sources and return a structured verdict.
+You are NOPE — a friendly, no-nonsense fact-checking buddy that helps people \
+figure out if something they saw online is actually true.
+
+Think of yourself as that one friend who's great at Googling things and doesn't \
+make anyone feel silly for asking. You're warm, direct, and a little witty — but \
+never preachy or condescending. Zero jargon. Zero tech-bro energy.
 
 ## CLAIM TO CHECK
 {claim}
@@ -37,22 +45,25 @@ Your job is to analyze a claim using evidence from multiple sources and return a
 ## EVIDENCE FROM FACT-CHECK ORGANIZATIONS (Google Fact Check API)
 {factcheck_evidence}
 
+## IMAGE ANALYSIS (if provided)
+{image_analysis}
+
 ## ERRORS DURING EVIDENCE GATHERING
 {errors}
 
 ## INSTRUCTIONS
 
-1. Analyze ALL evidence carefully. Cross-reference sources.
-2. Determine a verdict:
-   - "true" — the claim is accurate and supported by reliable evidence
-   - "misleading" — the claim contains some truth but is missing important context or is exaggerated
-   - "false" — the claim is factually incorrect based on available evidence
-   - "uncertain" — there is insufficient evidence to make a confident determination
-3. If evidence is insufficient or contradictory, you MUST return "uncertain". Do NOT guess.
-4. Write your explanation at a grade 6-8 reading level. Use short sentences. Avoid jargon.
-5. Include a confidence score (0.0 to 1.0). Be honest about uncertainty.
-6. Cite specific sources with URLs from the evidence provided. Only cite sources that actually appear in the evidence — NEVER invent URLs.
-7. Include an educational tip that helps the reader think critically about this type of content.
+1. Dig through ALL the evidence. Cross-reference sources — the more agreement, the better.
+2. Pick a verdict:
+   - "true" — yep, this checks out. Reliable sources back it up.
+   - "misleading" — there's a grain of truth here, but important context is missing or it's been exaggerated.
+   - "false" — nope, this one doesn't hold up. The facts say otherwise.
+   - "uncertain" — not enough good evidence either way. Honest answer: we're not sure yet.
+3. If the evidence is thin or contradictory, say "uncertain". Guessing helps nobody.
+4. Write like you're explaining this to a friend over coffee. Short sentences. Plain words. No jargon.
+5. Give an honest confidence score (0.0 to 1.0). It's okay to say "we're not very sure."
+6. Cite real sources with URLs from the evidence. NEVER make up URLs — that's the opposite of helpful.
+7. Include a practical tip — something they can actually use next time they see something fishy.
 8. Provide a step-by-step reasoning chain for the audit log.
 
 ## OUTPUT FORMAT
@@ -62,18 +73,19 @@ Return a valid JSON object with exactly these fields:
   "claim": "<the claim restated clearly>",
   "verdict": "<true|misleading|false|uncertain>",
   "confidence": <0.0 to 1.0>,
-  "explanation": "<plain-language explanation, 2-4 sentences, grade 6-8 reading level>",
+  "explanation": "<plain-language explanation, 2-4 sentences — like you're texting a friend who asked 'is this real?'>",
   "sources": [
     {{"name": "<source name>", "url": "<actual URL from evidence>", "snippet": "<relevant excerpt>"}}
   ],
-  "educational_tip": "<one practical tip for spotting this type of misinformation>",
+  "educational_tip": "<one practical, friendly tip for spotting this kind of misinformation next time>",
   "reasoning_chain": "<step-by-step reasoning>"
 }}
 
 Return ONLY the JSON object, no other text."""
 
 VALIDATION_PROMPT = """\
-You are a quality validator for a fact-checking system. Review this verdict for quality and accuracy.
+You are a quality checker for NOPE, a friendly fact-checking tool. \
+Your job: make sure the verdict is solid, honest, and sounds like a helpful friend — not a textbook.
 
 ## ORIGINAL CLAIM
 {claim}
@@ -86,14 +98,14 @@ You are a quality validator for a fact-checking system. Review this verdict for 
 
 ## VALIDATION CHECKS
 
-Check each of the following and report any issues:
+Check each of the following and flag any issues:
 
-1. **Verdict consistency**: Does the verdict level (true/misleading/false/uncertain) match the explanation?
-2. **Source grounding**: Are all cited sources actually present in the available evidence? Are URLs real (not fabricated)?
-3. **Confidence calibration**: Is the confidence score appropriate given the evidence? Low evidence should mean low confidence.
-4. **Explanation clarity**: Is the explanation written at a grade 6-8 reading level? Is it clear and helpful?
-5. **Completeness**: Does the response include all required fields?
-6. **Uncertainty handling**: If evidence is insufficient, is the verdict "uncertain" rather than a forced conclusion?
+1. **Verdict consistency**: Does the verdict (true/misleading/false/uncertain) actually match what the explanation says?
+2. **Source grounding**: Are the cited sources real and present in the evidence? No made-up URLs — that's a dealbreaker.
+3. **Confidence calibration**: Does the confidence score make sense? Thin evidence = low confidence. No faking certainty.
+4. **Tone & clarity**: Does it read like a friendly, plain-language explanation? No jargon, no condescension, no walls of text.
+5. **Completeness**: Are all the required fields there?
+6. **Uncertainty handling**: If evidence is weak, is the verdict "uncertain" instead of a forced guess?
 
 ## OUTPUT FORMAT
 
@@ -136,12 +148,30 @@ def _format_evidence(evidence: GatheredEvidence) -> dict[str, str]:
     else:
         factcheck_text = "No published fact-checks found.\n"
 
+    image_text = ""
+    if evidence.image_analysis:
+        ia = evidence.image_analysis
+        image_text += f"Description: {ia.description}\n"
+        image_text += f"Authenticity assessment: {ia.authenticity_assessment}\n"
+        image_text += f"Confidence: {ia.confidence}\n"
+        if ia.ai_generation_signals:
+            image_text += "AI generation signals:\n"
+            for s in ia.ai_generation_signals:
+                image_text += f"  - {s}\n"
+        if ia.manipulation_signals:
+            image_text += "Manipulation signals:\n"
+            for s in ia.manipulation_signals:
+                image_text += f"  - {s}\n"
+    else:
+        image_text = "No image was provided for analysis.\n"
+
     errors_text = "\n".join(evidence.errors) if evidence.errors else "None"
 
     return {
         "pinecone_evidence": pinecone_text,
         "tavily_evidence": tavily_text,
         "factcheck_evidence": factcheck_text,
+        "image_analysis": image_text,
         "errors": errors_text,
     }
 
@@ -162,40 +192,121 @@ def _parse_json_response(text: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def gather_evidence_node(state: AgentState) -> AgentState:
-    """Gather evidence from all three sources in parallel."""
+    """Gather evidence from all sources in parallel, including image if provided."""
     claim = state["claim"]
-    evidence = gather_evidence(claim)
+    evidence = gather_evidence(
+        claim,
+        image_b64=state.get("image_b64"),
+        media_type=state.get("media_type"),
+    )
     return {"evidence": evidence}
 
 
 def analyze_node(state: AgentState) -> AgentState:
-    """Claude analyzes all evidence and produces a structured verdict."""
-    llm = ChatAnthropic(
-        model=LLM_MODEL,
-        api_key=ANTHROPIC_API_KEY,
-        max_tokens=2000,
-        temperature=0,
-    )
+    """Claude analyzes all evidence and produces a structured verdict.
 
+    When an image is present, uses Anthropic SDK directly for Vision support.
+    """
     evidence = state["evidence"]
     formatted = _format_evidence(evidence)
+    prompt_text = ANALYSIS_PROMPT.format(claim=state["claim"], **formatted)
 
-    prompt = ANALYSIS_PROMPT.format(claim=state["claim"], **formatted)
-    response = llm.invoke(prompt)
+    image_b64 = state.get("image_b64")
+    media_type = state.get("media_type")
 
     try:
-        verdict_data = _parse_json_response(response.content)
+        if image_b64 and media_type:
+            # Use Anthropic SDK directly for Vision support
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY, timeout=90.0)
+            response = client.messages.create(
+                model=LLM_MODEL,
+                max_tokens=2000,
+                temperature=0,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": media_type,
+                                    "data": image_b64,
+                                },
+                            },
+                            {"type": "text", "text": prompt_text},
+                        ],
+                    }
+                ],
+            )
+            response_content = response.content[0].text
+        else:
+            # Text-only: use LangChain as before
+            llm = ChatAnthropic(
+                model=LLM_MODEL,
+                api_key=ANTHROPIC_API_KEY,
+                max_tokens=2000,
+                temperature=0,
+            )
+            response = llm.invoke(prompt_text)
+            response_content = response.content
+
+        verdict_data = _parse_json_response(response_content)
         verdict = Verdict(**verdict_data)
-    except Exception as e:
-        # Fallback: return uncertain verdict if parsing fails
+    except anthropic.AuthenticationError as e:
+        logger.error("Anthropic auth failed in analysis: %s", e)
         verdict = Verdict(
             claim=state["claim"],
             verdict=VerdictLevel.UNCERTAIN,
             confidence=0.0,
-            explanation="I wasn't able to complete the analysis. Please try again or rephrase your question.",
+            explanation="Hmm, something's off on our end — we couldn't connect to the analysis service. Not your fault! Try again in a bit.",
             sources=[],
-            educational_tip="When a fact-check tool can't verify something, try searching for the claim on trusted news sites yourself.",
+            educational_tip="When a tool can't check something for you, try Googling the claim yourself plus the word 'fact check.' You'd be surprised how often that works.",
+            reasoning_chain=f"Authentication error: {e}",
+        )
+    except anthropic.RateLimitError as e:
+        logger.warning("Anthropic rate limit hit in analysis: %s", e)
+        verdict = Verdict(
+            claim=state["claim"],
+            verdict=VerdictLevel.UNCERTAIN,
+            confidence=0.0,
+            explanation="We're getting a lot of requests right now — things are a little backed up. Give it a minute and try again!",
+            sources=[],
+            educational_tip="While you wait, here's a quick trick: copy the claim and paste it into Google with quotes around it. See what comes up!",
+            reasoning_chain=f"Rate limited: {e}",
+        )
+    except (anthropic.APIConnectionError, anthropic.InternalServerError) as e:
+        logger.error("Anthropic API error in analysis: %s", e)
+        verdict = Verdict(
+            claim=state["claim"],
+            verdict=VerdictLevel.UNCERTAIN,
+            confidence=0.0,
+            explanation="We couldn't reach our analysis service — could be a hiccup on the internet's end. Try again in a sec!",
+            sources=[],
+            educational_tip="Pro tip: if a fact-checking tool isn't working, try searching for the claim on sites like Snopes, Reuters, or AP News.",
+            reasoning_chain=f"API connection error: {e}",
+        )
+    except (json.JSONDecodeError, KeyError, ValueError) as e:
+        logger.error("Failed to parse analysis response: %s", e)
+        verdict = Verdict(
+            claim=state["claim"],
+            verdict=VerdictLevel.UNCERTAIN,
+            confidence=0.0,
+            explanation="Something went sideways with our analysis — sorry about that! Try rephrasing the claim or give it another go.",
+            sources=[],
+            educational_tip="Shorter, simpler claims are easier to check. If a claim has multiple parts, try checking each piece separately.",
             reasoning_chain=f"Analysis failed to produce valid output: {e}",
+        )
+    except Exception as e:
+        logger.exception("Unexpected error in analysis node")
+        verdict = Verdict(
+            claim=state["claim"],
+            verdict=VerdictLevel.UNCERTAIN,
+            confidence=0.0,
+            explanation="Well, that wasn't supposed to happen! Something unexpected went wrong. Give it another try — these things usually sort themselves out.",
+            sources=[],
+            educational_tip="If you keep running into trouble, try checking the claim on Snopes.com or FactCheck.org — they're great free resources.",
+            reasoning_chain=f"Unexpected error: {e}",
         )
 
     return {"verdict": verdict}
@@ -203,13 +314,6 @@ def analyze_node(state: AgentState) -> AgentState:
 
 def validate_node(state: AgentState) -> AgentState:
     """Secondary LLM call validates the verdict for quality."""
-    llm = ChatAnthropic(
-        model=LLM_MODEL_FAST,
-        api_key=ANTHROPIC_API_KEY,
-        max_tokens=2000,
-        temperature=0,
-    )
-
     evidence = state["evidence"]
     verdict = state["verdict"]
     formatted = _format_evidence(evidence)
@@ -222,11 +326,16 @@ def validate_node(state: AgentState) -> AgentState:
         verdict_json=verdict.model_dump_json(indent=2),
         evidence_summary=evidence_summary,
     )
-    response = llm.invoke(prompt)
 
     try:
+        llm = ChatAnthropic(
+            model=LLM_MODEL_FAST,
+            api_key=ANTHROPIC_API_KEY,
+            max_tokens=2000,
+            temperature=0,
+        )
+        response = llm.invoke(prompt)
         validation_data = _parse_json_response(response.content)
-        # Parse corrected verdict if present
         corrected = None
         if validation_data.get("corrected_verdict"):
             corrected = Verdict(**validation_data["corrected_verdict"])
@@ -235,7 +344,11 @@ def validate_node(state: AgentState) -> AgentState:
             issues=validation_data.get("issues", []),
             corrected_verdict=corrected,
         )
-    except Exception:
+    except (json.JSONDecodeError, KeyError, ValueError) as e:
+        logger.error("Failed to parse validation response: %s", e)
+        validation = ValidationResult(is_valid=True, issues=[])
+    except Exception as e:
+        logger.exception("Validation node failed, accepting original verdict")
         validation = ValidationResult(is_valid=True, issues=[])
 
     # Use corrected verdict if validation found issues
@@ -266,13 +379,22 @@ def build_graph() -> StateGraph:
 # Main entry point
 # ---------------------------------------------------------------------------
 
-def check_claim(claim: str) -> tuple[Verdict, ValidationResult, GatheredEvidence]:
+def check_claim(
+    claim: str,
+    image_b64: str | None = None,
+    media_type: str | None = None,
+) -> tuple[Verdict, ValidationResult, GatheredEvidence]:
     """Run the full verification pipeline on a claim.
 
+    Optionally includes image analysis if image_b64 and media_type are provided.
     Returns (final_verdict, validation_result, gathered_evidence).
     """
     app = build_graph()
-    result = app.invoke({"claim": claim})
+    state: dict = {"claim": claim}
+    if image_b64 and media_type:
+        state["image_b64"] = image_b64
+        state["media_type"] = media_type
+    result = app.invoke(state)
     return (
         result["final_verdict"],
         result.get("validation", ValidationResult(is_valid=True)),
