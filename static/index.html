@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NOPE — The Misinformation Shield</title>
+<link rel="icon" href="/static/assets/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Crimson+Pro:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --coral: #FF6B5A;
+    --navy: #1A1F3D;
+    --cream: #FFF8F0;
+    --mint: #4ECDC4;
+    --gold: #FFD93D;
+    --soft-gray: #8E8EA0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--cream);
+    color: var(--navy);
+    overflow-x: hidden;
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1.5rem;
+    position: relative;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(78, 205, 196, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(255, 107, 90, 0.12) 0%, transparent 50%),
+      var(--cream);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--navy);
+    color: var(--cream);
+    padding: 0.5rem 1.2rem;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: fadeDown 0.8s ease-out;
+    margin-bottom: 2rem;
+  }
+
+  .badge .dot {
+    width: 8px;
+    height: 8px;
+    background: var(--mint);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .logo {
+    font-size: clamp(5rem, 15vw, 12rem);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.04em;
+    animation: fadeUp 0.8s ease-out 0.2s both;
+    position: relative;
+  }
+
+  .logo span {
+    position: relative;
+    display: inline-block;
+  }
+
+  .logo .strike {
+    position: absolute;
+    top: 50%;
+    left: -5%;
+    width: 110%;
+    height: 8px;
+    background: var(--coral);
+    border-radius: 4px;
+    transform: rotate(-2deg);
+    animation: strikeIn 0.5s ease-out 1s both;
+  }
+
+  .tagline {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    color: var(--soft-gray);
+    margin-top: 1rem;
+    animation: fadeUp 0.8s ease-out 0.4s both;
+  }
+
+  .headline {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.2;
+    max-width: 700px;
+    margin-top: 3rem;
+    animation: fadeUp 0.8s ease-out 0.6s both;
+  }
+
+  .headline .highlight {
+    background: linear-gradient(120deg, var(--gold) 0%, var(--gold) 100%);
+    background-size: 100% 35%;
+    background-position: 0 85%;
+    background-repeat: no-repeat;
+    padding: 0 0.1em;
+  }
+
+  .subtext {
+    font-size: 1.1rem;
+    color: var(--soft-gray);
+    max-width: 540px;
+    line-height: 1.7;
+    margin-top: 1.5rem;
+    animation: fadeUp 0.8s ease-out 0.8s both;
+  }
+
+  .cards-section {
+    padding: 2rem 1.5rem 4rem;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 2rem;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(26, 31, 61, 0.06);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    animation: fadeUp 0.8s ease-out both;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.3s; }
+  .card:nth-child(2) { animation-delay: 0.5s; }
+  .card:nth-child(3) { animation-delay: 0.7s; }
+
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(26, 31, 61, 0.12);
+  }
+
+  .card-emoji {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .card p {
+    font-size: 0.95rem;
+    color: var(--soft-gray);
+    line-height: 1.6;
+  }
+
+  .card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+  }
+
+  .card:nth-child(1)::after { background: var(--coral); }
+  .card:nth-child(2)::after { background: var(--mint); }
+  .card:nth-child(3)::after { background: var(--gold); }
+
+  .ask-section {
+    background: var(--navy);
+    color: var(--cream);
+    padding: 4rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ask-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 60% 40%, rgba(78, 205, 196, 0.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .ask-section h2 {
+    font-size: clamp(1.8rem, 4vw, 2.5rem);
+    font-weight: 700;
+    max-width: 600px;
+    margin: 0 auto 1.5rem;
+    line-height: 1.25;
+  }
+
+  .ask-section p {
+    font-size: 1.05rem;
+    color: rgba(255, 248, 240, 0.65);
+    max-width: 500px;
+    margin: 0 auto 0.8rem;
+    line-height: 1.7;
+  }
+
+  .step-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2.5rem auto;
+    max-width: 700px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(255, 248, 240, 0.07);
+    border: 1px solid rgba(255, 248, 240, 0.1);
+    border-radius: 14px;
+    padding: 1rem 1.4rem;
+    font-size: 0.95rem;
+    backdrop-filter: blur(4px);
+  }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--coral);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .cta-area {
+    background: var(--cream);
+    padding: 4rem 1.5rem 5rem;
+    text-align: center;
+  }
+
+  .thought-bubble {
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    color: var(--navy);
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.5;
+    position: relative;
+  }
+
+  .thought-bubble::before {
+    content: '\201C';
+    font-size: 4rem;
+    color: var(--coral);
+    position: absolute;
+    top: -1.5rem;
+    left: -0.5rem;
+    opacity: 0.3;
+    font-family: 'Outfit', sans-serif;
+  }
+
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--coral);
+    color: white;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 1.1rem 2.5rem;
+    border-radius: 100px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(255, 107, 90, 0.35);
+  }
+
+  .cta-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 30px rgba(255, 107, 90, 0.45);
+  }
+
+  .cta-btn .arrow {
+    transition: transform 0.3s ease;
+  }
+
+  .cta-btn:hover .arrow {
+    transform: translateX(4px);
+  }
+
+  .fine-print {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--soft-gray);
+  }
+
+  .fine-print strong {
+    color: var(--mint);
+    font-weight: 700;
+  }
+
+  footer {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    font-size: 0.8rem;
+    color: var(--soft-gray);
+    border-top: 1px solid rgba(26, 31, 61, 0.08);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes strikeIn {
+    from { width: 0; }
+    to { width: 110%; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  @media (max-width: 600px) {
+    .step-list { flex-direction: column; align-items: center; }
+    .step { width: 100%; max-width: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="badge">
+    <span class="dot"></span>
+    Now recruiting testers
+  </div>
+
+  <div class="logo">
+    <span>
+      NOPE.
+      <div class="strike"></div>
+    </span>
+  </div>
+
+  <div class="tagline">The misinformation shield for senior adults</div>
+
+  <h1 class="headline">
+    Your parents survived the 90s internet.<br>
+    Can they survive <span class="highlight">today's fake news?</span>
+  </h1>
+
+  <p class="subtext">
+    We're building a tool that helps older adults spot misinformation &mdash; in their language, at their pace, with zero condescension. And we need your help to test it.
+  </p>
+</section>
+
+<section class="cards-section">
+  <div class="section-label">Why This Matters</div>
+  <div class="cards">
+    <div class="card">
+      <div class="card-emoji">&#128241;</div>
+      <h3>The WhatsApp Rabbit Hole</h3>
+      <p>Your dad just forwarded a "health tip" from a chain message. It says lemon water cures everything. Spoiler: it doesn't. But he doesn't know that yet.</p>
+    </div>
+    <div class="card">
+      <div class="card-emoji">&#129504;</div>
+      <h3>Designed for Real People</h3>
+      <p>No jargon. No tech-bro energy. NOPE meets seniors where they are &mdash; with clarity, warmth, and information they can actually use.</p>
+    </div>
+    <div class="card">
+      <div class="card-emoji">&#128737;</div>
+      <h3>Prevention &gt; Correction</h3>
+      <p>It's easier to build a shield than to un-believe a lie. NOPE helps seniors recognise fakes before they hit "Share."</p>
+    </div>
+  </div>
+</section>
+
+<section class="ask-section">
+  <h2>What we're asking<br>(it's embarrassingly easy)</h2>
+  <p>For the first round of testing, we just need one thing from you:</p>
+
+  <div class="step-list">
+    <div class="step">
+      <div class="step-num">1</div>
+      <span>Send us a piece of fake news in your language</span>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <span>The kind your parents would actually receive</span>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <span>That's it. Seriously. That's the whole ask.</span>
+    </div>
+  </div>
+
+  <p style="opacity: 0.5; font-size: 0.9rem; margin-top: 1rem;">
+    WhatsApp forwards, Facebook posts, Viber chains, Telegram screenshots &mdash; we want the real stuff that lands in real inboxes.
+  </p>
+</section>
+
+<section class="cta-area">
+  <div class="thought-bubble">
+    Think about it &mdash; what if the next time your mom gets a "miracle cure" forward, she already knows it's nonsense?
+  </div>
+
+  <a href="/static/chat.html" class="cta-btn">
+    Try NOPE Now
+    <span class="arrow">&rarr;</span>
+  </a>
+
+  <p class="fine-print">
+    Takes <strong>under 2 minutes</strong> &middot; No personal data needed &middot; Just good karma
+  </p>
+</section>
+
+<footer>
+  NOPE. &middot; Because "just Google it" is not a strategy for your grandma.
+</footer>
+
+</body>
+</html>

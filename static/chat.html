@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>NOPE — Chat</title>
+  <link rel="icon" href="/static/assets/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/chat.css">
+  <!-- Runtime config from server -->
+  <script src="/config.js"></script>
+  <!-- Chat modules -->
+  <script src="/static/js/config.js"></script>
+  <script src="/static/js/markdown.js"></script>
+  <script src="/static/js/imageUpload.js"></script>
+  <script src="/static/js/chat.js"></script>
+</head>
+<body>
+  <div class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+      <a href="/" class="back-btn" title="Back to home">&larr;</a>
+      <div class="header-brand">
+        <div>
+          <div class="header-logo">NOPE<span class="accent">.</span></div>
+          <div class="header-subtitle">Misinformation checker</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="clear-btn" onclick="clearHistory()" title="Clear chat">Clear</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages" id="messages"></div>
+
+    <!-- Image preview -->
+    <div class="image-preview" id="image-preview">
+      <img id="preview-thumbnail" src="" alt="Preview">
+      <div class="preview-info">
+        <div class="preview-filename" id="preview-filename"></div>
+        <div class="preview-label">Ready to send</div>
+      </div>
+      <button class="remove-image" id="remove-image" title="Remove image">&times;</button>
+    </div>
+
+    <!-- Input area -->
+    <div class="input-area">
+      <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif,image/webp">
+      <button class="attach-btn" id="attach-btn" title="Attach image">&#128206;</button>
+      <textarea id="chat-input" rows="1" placeholder="Paste a claim or news headline..."></textarea>
+      <button class="send-btn" id="send-btn" title="Send message">&#10148;</button>
+    </div>
+  </div>
+</body>
+</html>

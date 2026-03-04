@@ -2,11 +2,15 @@
 
 import base64
 import logging
+import os
 import time
 from typing import Optional
 
 import httpx
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from src.agent import check_claim
@@ -21,6 +25,32 @@ logging.basicConfig(
 logger = logging.getLogger("nope.api")
 
 app = FastAPI(title="NOPE API")
+
+# --- CORS (frontend may call n8n on a different origin) ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# --- Static files ---
+_static_dir = os.path.join(os.path.dirname(__file__), "static")
+app.mount("/static", StaticFiles(directory=_static_dir), name="static")
+
+
+@app.get("/")
+def landing_page():
+    """Serve the NOPE landing page."""
+    return FileResponse(os.path.join(_static_dir, "index.html"))
+
+
+@app.get("/config.js")
+def config_js():
+    """Inject runtime config (n8n webhook URL) as JavaScript."""
+    webhook_url = os.environ.get("N8N_WEBHOOK_URL", "")
+    js = f'window.__NOPE_CONFIG__ = {{ N8N_WEBHOOK_URL: "{webhook_url}" }};'
+    return PlainTextResponse(js, media_type="application/javascript")
 
 VERDICT_EMOJI = {
     VerdictLevel.TRUE: "✅",
