@@ -9,9 +9,13 @@ from typing import Optional
 import httpx
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, PlainTextResponse, Response
+from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from slowapi.util import get_remote_address
 
 from src.agent import check_claim
 from src.audit_log import log_check, log_image_check
@@ -26,13 +30,27 @@ logger = logging.getLogger("nope.api")
 
 app = FastAPI(title="NOPE API")
 
-# --- CORS (frontend may call n8n on a different origin) ---
+# --- Rate limiting ---
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
+
+# --- CORS (env-var-driven allowlist) ---
+_allowed_origins = os.environ.get(
+    "ALLOWED_ORIGINS", "http://localhost:8000,http://localhost:3000"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Claim length validation ---
+MAX_CLAIM_LENGTH = 5000
+MAX_CHAT_BODY_SIZE = 50 * 1024  # 50 KB
 
 # --- Static files ---
 _static_dir = os.path.join(os.path.dirname(__file__), "static")
@@ -117,8 +135,14 @@ def _build_check_response(verdict, validation, evidence, elapsed):
 
 
 @app.post("/check")
-def check(req: CheckRequest):
+@limiter.limit("10/minute")
+def check(req: CheckRequest, request: Request):
     """Run the full verification pipeline (text only, JSON body)."""
+    if len(req.claim) > MAX_CLAIM_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Claim is too long ({len(req.claim)} chars). Please keep it under {MAX_CLAIM_LENGTH} characters.",
+        )
     start = time.time()
     try:
         verdict, validation, evidence = check_claim(req.claim.strip())
@@ -181,12 +205,19 @@ async def _resolve_image(
 
 
 @app.post("/check-with-image")
+@limiter.limit("5/minute")
 async def check_with_image(
+    request: Request,
     claim: str = Form(...),
     file: Optional[UploadFile] = File(None),
     image_url: Optional[str] = Form(None),
 ):
     """Run the full verification pipeline with an optional image (multipart form)."""
+    if len(claim) > MAX_CLAIM_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Claim is too long ({len(claim)} chars). Please keep it under {MAX_CLAIM_LENGTH} characters.",
+        )
     image_b64, media_type = await _resolve_image(file, image_url)
 
     start = time.time()
@@ -220,12 +251,19 @@ SUPPORTED_MEDIA_TYPES = {
 
 
 @app.post("/check-image")
+@limiter.limit("5/minute")
 async def check_image_endpoint(
+    request: Request,
     file: Optional[UploadFile] = File(None),
     image_url: Optional[str] = Form(None),
     context: Optional[str] = Form(None),
 ):
     """Analyze an image for AI generation, manipulation, or misuse."""
+    if context and len(context) > MAX_CLAIM_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Context is too long ({len(context)} chars). Please keep it under {MAX_CLAIM_LENGTH} characters.",
+        )
     if not file and not image_url:
         raise HTTPException(
             status_code=400,
@@ -280,6 +318,7 @@ async def check_image_endpoint(
 
 
 @app.post("/api/chat")
+@limiter.limit("10/minute")
 async def proxy_chat(request: Request):
     """Proxy chat requests to the n8n webhook to avoid mixed-content errors."""
     webhook_url = os.environ.get("N8N_WEBHOOK_URL", "")
@@ -287,6 +326,11 @@ async def proxy_chat(request: Request):
         raise HTTPException(status_code=503, detail="N8N_WEBHOOK_URL not configured")
 
     body = await request.body()
+    if len(body) > MAX_CHAT_BODY_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Request body too large ({len(body)} bytes). Max: {MAX_CHAT_BODY_SIZE} bytes.",
+        )
     headers = {"Content-Type": request.headers.get("content-type", "application/json")}
 
     async with httpx.AsyncClient(timeout=120) as client:

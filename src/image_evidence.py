@@ -9,6 +9,8 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 import requests
 from PIL import Image, UnidentifiedImageError
 from PIL.ExifTags import TAGS
+
+Image.MAX_IMAGE_PIXELS = 50_000_000  # ~7000x7000 max — prevent decompression bombs
 from tavily import TavilyClient
 
 from src.config import SERPAPI_API_KEY, TAVILY_API_KEY
