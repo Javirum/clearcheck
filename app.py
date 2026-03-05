@@ -1,6 +1,7 @@
 """NOPE — FastAPI server called by N8N chat workflow."""
 
 import base64
+import json
 import logging
 import os
 import time
@@ -50,7 +51,7 @@ app.add_middleware(
 
 # --- Claim length validation ---
 MAX_CLAIM_LENGTH = 5000
-MAX_CHAT_BODY_SIZE = 50 * 1024  # 50 KB
+MAX_CHAT_BODY_SIZE = 25 * 1024 * 1024  # 25 MB (accommodates image uploads via chat)
 
 # --- Static files ---
 _static_dir = os.path.join(os.path.dirname(__file__), "static")
@@ -317,24 +318,122 @@ async def check_image_endpoint(
     }
 
 
+def _format_check_as_chat(result: dict) -> str:
+    """Format a /check or /check-image result dict as a friendly markdown chat message."""
+    lines = []
+    emoji = result.get("emoji", "")
+    label = result.get("label", "")
+    lines.append(f"## {emoji} {label}\n")
+
+    if result.get("explanation"):
+        lines.append(result["explanation"] + "\n")
+
+    # Scam assessment (text check)
+    scam = result.get("scam_assessment")
+    if scam and scam.get("is_likely_scam"):
+        lines.append(f"**Scam alert ({scam.get('scam_type', 'unknown')}):** "
+                      + ", ".join(scam.get("red_flags", [])) + "\n")
+
+    # Image-specific fields
+    if result.get("ai_generation_signals"):
+        lines.append("**AI generation signals:** " + ", ".join(result["ai_generation_signals"]) + "\n")
+    if result.get("manipulation_signals"):
+        lines.append("**Manipulation signals:** " + ", ".join(result["manipulation_signals"]) + "\n")
+    if result.get("context_analysis"):
+        lines.append("**Context:** " + result["context_analysis"] + "\n")
+
+    # Sources
+    sources = result.get("sources", [])
+    if sources:
+        lines.append("**Sources:**")
+        for s in sources[:5]:
+            name = s.get("name", s.get("url", ""))
+            url = s.get("url", "")
+            lines.append(f"- [{name}]({url})" if url else f"- {name}")
+        lines.append("")
+
+    if result.get("educational_tip"):
+        lines.append(f"💡 **Tip:** {result['educational_tip']}")
+
+    return "\n".join(lines)
+
+
 @app.post("/api/chat")
 @limiter.limit("10/minute")
 async def proxy_chat(request: Request):
-    """Proxy chat requests to the n8n webhook to avoid mixed-content errors."""
+    """Handle chat messages. Routes image requests through NOPE pipelines, proxies text to n8n."""
+    raw_body = await request.body()
+    if len(raw_body) > MAX_CHAT_BODY_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Request body too large ({len(raw_body)} bytes). Max: {MAX_CHAT_BODY_SIZE} bytes.",
+        )
+
+    try:
+        payload = json.loads(raw_body)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        raise HTTPException(status_code=400, detail="Invalid JSON body.")
+
+    files = payload.get("files") or []
+    chat_input = (payload.get("chatInput") or "").strip()
+
+    # --- Image attached: run through NOPE pipelines directly ---
+    if files:
+        file_obj = files[0]
+        image_b64 = file_obj.get("data")
+        media_type = file_obj.get("type", "image/jpeg")
+        if not image_b64:
+            return JSONResponse({"output": "I couldn't read that image. Please try uploading again."})
+
+        start = time.time()
+        try:
+            # If user provided text context, run the full claim+image pipeline
+            if chat_input and chat_input != "Please analyze this image.":
+                verdict, validation, evidence = check_claim(
+                    chat_input, image_b64=image_b64, media_type=media_type
+                )
+                elapsed = time.time() - start
+                try:
+                    log_check(verdict, evidence, validation, response_time=elapsed)
+                except Exception:
+                    logger.exception("Failed to write audit log")
+                result = _build_check_response(verdict, validation, evidence, elapsed)
+            else:
+                # Image-only: run image analysis pipeline
+                image_bytes = base64.b64decode(image_b64)
+                verdict, validation, evidence = check_image(
+                    image_b64, media_type, chat_input
+                )
+                elapsed = time.time() - start
+                try:
+                    log_image_check(verdict, evidence, validation, user_context=chat_input, response_time=elapsed)
+                except Exception:
+                    logger.exception("Failed to write image audit log")
+                result = {
+                    "verdict": verdict.verdict.value,
+                    "label": IMAGE_VERDICT_LABEL[verdict.verdict],
+                    "emoji": IMAGE_VERDICT_EMOJI[verdict.verdict],
+                    "explanation": verdict.explanation,
+                    "ai_generation_signals": verdict.ai_generation_signals,
+                    "manipulation_signals": verdict.manipulation_signals,
+                    "context_analysis": verdict.context_analysis,
+                    "sources": [{"name": s.name, "url": s.url, "snippet": s.snippet} for s in verdict.sources],
+                    "educational_tip": verdict.educational_tip,
+                }
+        except Exception:
+            logger.exception("Chat image pipeline failed")
+            return JSONResponse({"output": "Something went wrong analyzing that image — please try again."})
+
+        return JSONResponse({"output": _format_check_as_chat(result)})
+
+    # --- Text only: proxy to n8n ---
     webhook_url = os.environ.get("N8N_WEBHOOK_URL", "")
     if not webhook_url:
         raise HTTPException(status_code=503, detail="N8N_WEBHOOK_URL not configured")
 
-    body = await request.body()
-    if len(body) > MAX_CHAT_BODY_SIZE:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Request body too large ({len(body)} bytes). Max: {MAX_CHAT_BODY_SIZE} bytes.",
-        )
     headers = {"Content-Type": request.headers.get("content-type", "application/json")}
-
     async with httpx.AsyncClient(timeout=120) as client:
-        resp = await client.post(webhook_url, content=body, headers=headers)
+        resp = await client.post(webhook_url, content=raw_body, headers=headers)
 
     return Response(content=resp.content, status_code=resp.status_code,
                     media_type=resp.headers.get("content-type"))
