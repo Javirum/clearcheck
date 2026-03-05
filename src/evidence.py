@@ -24,13 +24,17 @@ from src.config import (
     LLM_MODEL,
 )
 from src.retry import retry
+from src.scam_analyzer import analyze_scam_patterns
 from src.schemas import (
     FactCheckResult,
     GatheredEvidence,
     ImageAnalysisResult,
     PineconeResult,
+    ScamAnalysisResult,
     TavilyResult,
+    URLSafetyResult,
 )
+from src.url_safety import check_urls
 
 logger = logging.getLogger("nope.evidence")
 
@@ -287,13 +291,31 @@ def gather_evidence(
             logger.exception("Unexpected error in image analysis")
             return None
 
+    def _scam_analysis():
+        try:
+            return analyze_scam_patterns(claim)
+        except Exception as e:
+            errors.append(f"Scam analysis error: {e}")
+            logger.exception("Unexpected error in scam analysis")
+            return None
+
+    def _url_safety():
+        try:
+            return check_urls(claim)
+        except Exception as e:
+            errors.append(f"URL safety check error: {e}")
+            logger.exception("Unexpected error in URL safety check")
+            return None
+
     has_image = image_b64 and media_type
-    max_workers = 4 if has_image else 3
+    max_workers = 6 if has_image else 5
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         pinecone_future = executor.submit(_pinecone)
         tavily_future = executor.submit(_tavily)
         factcheck_future = executor.submit(_factcheck)
+        scam_future = executor.submit(_scam_analysis)
+        url_future = executor.submit(_url_safety)
         image_future = executor.submit(_image_analysis) if has_image else None
 
         try:
@@ -313,6 +335,18 @@ def gather_evidence(
         except FuturesTimeoutError:
             errors.append("Google Fact Check search timed out")
             logger.error("Google Fact Check exceeded 15s timeout")
+
+        try:
+            evidence.scam_analysis = scam_future.result(timeout=5)
+        except FuturesTimeoutError:
+            errors.append("Scam analysis timed out")
+            logger.error("Scam analysis exceeded 5s timeout")
+
+        try:
+            evidence.url_safety = url_future.result(timeout=10)
+        except FuturesTimeoutError:
+            errors.append("URL safety check timed out")
+            logger.error("URL safety check exceeded 10s timeout")
 
         if image_future:
             try:

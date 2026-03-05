@@ -15,12 +15,19 @@ from src.config import (
     EMBEDDING_DIMENSION,
 )
 
-DATA_PATH = Path(__file__).resolve().parent.parent / "data" / "misinformation_patterns.json"
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+MISINFO_PATH = DATA_DIR / "misinformation_patterns.json"
+SCAM_PATH = DATA_DIR / "scam_patterns.json"
 
 
 def load_patterns() -> list[dict]:
-    with open(DATA_PATH) as f:
-        return json.load(f)
+    patterns = []
+    with open(MISINFO_PATH) as f:
+        patterns.extend(json.load(f))
+    if SCAM_PATH.exists():
+        with open(SCAM_PATH) as f:
+            patterns.extend(json.load(f))
+    return patterns
 
 
 def create_embedding(client: OpenAI, text: str) -> list[float]:
@@ -30,7 +37,7 @@ def create_embedding(client: OpenAI, text: str) -> list[float]:
 
 def seed():
     patterns = load_patterns()
-    print(f"Loaded {len(patterns)} misinformation patterns")
+    print(f"Loaded {len(patterns)} patterns (misinformation + scam)")
 
     # Initialize clients
     openai_client = OpenAI(api_key=OPENAI_API_KEY)
@@ -61,17 +68,20 @@ def seed():
         # Combine claim and explanation for richer embedding
         embed_text = f"{pattern['claim']} {pattern['explanation']}"
         embedding = create_embedding(openai_client, embed_text)
+        metadata = {
+            "claim": pattern["claim"],
+            "category": pattern["category"],
+            "verdict": pattern["verdict"],
+            "explanation": pattern["explanation"],
+            "sources": ", ".join(pattern["sources"]),
+            "date_added": pattern["date_added"],
+        }
+        if "red_flags" in pattern:
+            metadata["red_flags"] = ", ".join(pattern["red_flags"])
         vectors.append({
             "id": pattern["id"],
             "values": embedding,
-            "metadata": {
-                "claim": pattern["claim"],
-                "category": pattern["category"],
-                "verdict": pattern["verdict"],
-                "explanation": pattern["explanation"],
-                "sources": ", ".join(pattern["sources"]),
-                "date_added": pattern["date_added"],
-            },
+            "metadata": metadata,
         })
         print(f"  Embedded: {pattern['id']} - {pattern['claim'][:60]}...")
 

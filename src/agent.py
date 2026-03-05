@@ -16,6 +16,7 @@ from src.evidence import gather_evidence
 from src.schemas import (
     AgentState,
     GatheredEvidence,
+    ScamAssessment,
     ValidationResult,
     Verdict,
     VerdictLevel,
@@ -27,7 +28,8 @@ from src.schemas import (
 
 ANALYSIS_PROMPT = """\
 You are NOPE — a friendly, no-nonsense fact-checking buddy that helps people \
-figure out if something they saw online is actually true.
+figure out if something they saw online is actually true. You also help people \
+spot scams before they get hurt.
 
 Think of yourself as that one friend who's great at Googling things and doesn't \
 make anyone feel silly for asking. You're warm, direct, and a little witty — but \
@@ -48,23 +50,43 @@ never preachy or condescending. Zero jargon. Zero tech-bro energy.
 ## IMAGE ANALYSIS (if provided)
 {image_analysis}
 
+## SCAM PATTERN ANALYSIS
+{scam_analysis}
+
+## URL SAFETY CHECK
+{url_safety}
+
 ## ERRORS DURING EVIDENCE GATHERING
 {errors}
 
 ## INSTRUCTIONS
 
 1. Dig through ALL the evidence. Cross-reference sources — the more agreement, the better.
-2. Pick a verdict:
+2. **Scam detection**: If the scam analysis or URL safety sections show red flags, take them \
+seriously. Scams targeting older adults are extremely common — tech support fraud, romance scams, \
+government impersonation, phishing, lottery schemes, and fake investments.
+3. Pick a verdict:
    - "true" — yep, this checks out. Reliable sources back it up.
    - "misleading" — there's a grain of truth here, but important context is missing or it's been exaggerated.
-   - "false" — nope, this one doesn't hold up. The facts say otherwise.
+   - "false" — nope, this one doesn't hold up. The facts say otherwise. Also use this for likely scams.
    - "uncertain" — not enough good evidence either way. Honest answer: we're not sure yet.
-3. If the evidence is thin or contradictory, say "uncertain". Guessing helps nobody.
-4. Write like you're explaining this to a friend over coffee. Short sentences. Plain words. No jargon.
-5. Give an honest confidence score (0.0 to 1.0). It's okay to say "we're not very sure."
-6. Cite real sources with URLs from the evidence. NEVER make up URLs — that's the opposite of helpful.
-7. Include a practical tip — something they can actually use next time they see something fishy.
-8. Provide a step-by-step reasoning chain for the audit log.
+4. If the evidence is thin or contradictory, say "uncertain". Guessing helps nobody.
+5. Write like you're explaining this to a friend over coffee. Short sentences. Plain words. No jargon.
+6. Give an honest confidence score (0.0 to 1.0). It's okay to say "we're not very sure."
+7. Cite real sources with URLs from the evidence. NEVER make up URLs — that's the opposite of helpful.
+8. Include a practical tip — something they can actually use next time they see something fishy.
+   If a scam was detected, make the tip specific to that scam type:
+   - Tech support scams: "Microsoft never cold-calls about computer problems. Hang up and call them directly."
+   - Payment scams: "No legitimate business asks for payment in gift cards — that's a scam, 100% of the time."
+   - Urgency scams: "Scammers create fake urgency. Legitimate organizations give you time to verify."
+   - Government scams: "The IRS never threatens arrest over the phone. They contact you by mail first."
+   - Romance scams: "Never send money to someone you've only met online, no matter how real the relationship feels."
+   - Lottery scams: "You can't win a lottery you didn't enter. If you have to pay to collect, it's a scam."
+   - Phishing: "Don't click links in emails or texts. Go directly to the website by typing the address yourself."
+   - Investment scams: "If someone guarantees returns, they're guaranteeing a scam. All real investments have risk."
+9. Provide a step-by-step reasoning chain for the audit log.
+10. **scam_assessment**: If scam indicators are present (from scam analysis, URL safety, or the claim content itself), \
+include a scam_assessment object. If no scam indicators are present, set scam_assessment to null.
 
 ## OUTPUT FORMAT
 
@@ -77,8 +99,14 @@ Return a valid JSON object with exactly these fields:
   "sources": [
     {{"name": "<source name>", "url": "<actual URL from evidence>", "snippet": "<relevant excerpt>"}}
   ],
-  "educational_tip": "<one practical, friendly tip for spotting this kind of misinformation next time>",
-  "reasoning_chain": "<step-by-step reasoning>"
+  "educational_tip": "<one practical, friendly tip for spotting this kind of misinformation or scam next time>",
+  "reasoning_chain": "<step-by-step reasoning>",
+  "scam_assessment": null or {{
+    "is_likely_scam": <true or false>,
+    "scam_type": "<tech_support|romance|government|grandparent|lottery|phishing|investment|charity or null>",
+    "scam_confidence": <0.0 to 1.0>,
+    "red_flags": ["<red flag 1>", "<red flag 2>"]
+  }}
 }}
 
 Return ONLY the JSON object, no other text."""
@@ -106,6 +134,7 @@ Check each of the following and flag any issues:
 4. **Tone & clarity**: Does it read like a friendly, plain-language explanation? No jargon, no condescension, no walls of text.
 5. **Completeness**: Are all the required fields there?
 6. **Uncertainty handling**: If evidence is weak, is the verdict "uncertain" instead of a forced guess?
+7. **Scam assessment**: If scam indicators are present in the evidence, does the verdict include a scam_assessment? Is the scam_type correct? Are the red flags accurate?
 
 ## OUTPUT FORMAT
 
@@ -165,6 +194,36 @@ def _format_evidence(evidence: GatheredEvidence) -> dict[str, str]:
     else:
         image_text = "No image was provided for analysis.\n"
 
+    scam_text = ""
+    if evidence.scam_analysis:
+        sa = evidence.scam_analysis
+        scam_text += f"Scam likelihood: {sa.scam_likelihood}\n"
+        scam_text += f"Urgency score: {sa.urgency_score}\n"
+        if sa.scam_type:
+            scam_text += f"Detected scam type: {sa.scam_type}\n"
+        if sa.red_flags_detected:
+            scam_text += "Red flags detected:\n"
+            for flag in sa.red_flags_detected:
+                scam_text += f"  - {flag}\n"
+    else:
+        scam_text = "No scam patterns detected.\n"
+
+    url_text = ""
+    if evidence.url_safety:
+        us = evidence.url_safety
+        url_text += f"URLs found: {len(us.urls_found)}\n"
+        if us.any_unsafe:
+            url_text += "WARNING: Unsafe URLs detected!\n"
+        for result in us.results:
+            status = "SAFE" if result.is_safe else "UNSAFE"
+            url_text += f"- [{status}] {result.url}\n"
+            if result.expanded_url:
+                url_text += f"  Expands to: {result.expanded_url}\n"
+            for threat in result.threats:
+                url_text += f"  Threat: {threat}\n"
+    else:
+        url_text = "No URLs found in the claim.\n"
+
     errors_text = "\n".join(evidence.errors) if evidence.errors else "None"
 
     return {
@@ -172,6 +231,8 @@ def _format_evidence(evidence: GatheredEvidence) -> dict[str, str]:
         "tavily_evidence": tavily_text,
         "factcheck_evidence": factcheck_text,
         "image_analysis": image_text,
+        "scam_analysis": scam_text,
+        "url_safety": url_text,
         "errors": errors_text,
     }
 
@@ -252,6 +313,9 @@ def analyze_node(state: AgentState) -> AgentState:
             response_content = response.content
 
         verdict_data = _parse_json_response(response_content)
+        # Parse scam_assessment if present
+        if verdict_data.get("scam_assessment"):
+            verdict_data["scam_assessment"] = ScamAssessment(**verdict_data["scam_assessment"])
         verdict = Verdict(**verdict_data)
     except anthropic.AuthenticationError as e:
         logger.error("Anthropic auth failed in analysis: %s", e)

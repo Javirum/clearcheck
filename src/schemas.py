@@ -50,6 +50,7 @@ class Verdict(BaseModel):
     sources: list[SourceCitation] = Field(description="Sources consulted with citations")
     educational_tip: str = Field(description="Educational tip to help the user think critically")
     reasoning_chain: str = Field(description="Step-by-step reasoning for the audit log")
+    scam_assessment: Optional[ScamAssessment] = Field(default=None, description="Scam assessment if fraud indicators detected")
 
 
 # ---------------------------------------------------------------------------
@@ -98,11 +99,45 @@ class ImageAnalysisResult(BaseModel):
     confidence: float = Field(default=0.0, ge=0.0, le=1.0, description="Confidence in the assessment")
 
 
+# ---------------------------------------------------------------------------
+# Scam detection schemas
+# ---------------------------------------------------------------------------
+
+class ScamAnalysisResult(BaseModel):
+    scam_likelihood: float = Field(ge=0.0, le=1.0, description="How likely this is a scam (0-1)")
+    scam_type: Optional[str] = Field(default=None, description="Detected scam category")
+    red_flags_detected: list[str] = Field(default_factory=list, description="Specific red flags found")
+    urgency_score: float = Field(default=0.0, ge=0.0, le=1.0, description="How much urgency/pressure language is present")
+
+
+class URLSafetyVerdict(BaseModel):
+    url: str = Field(description="The URL that was checked")
+    is_safe: bool = Field(description="Whether the URL appears safe")
+    threats: list[str] = Field(default_factory=list, description="Threat types detected")
+    expanded_url: Optional[str] = Field(default=None, description="Expanded URL if shortened")
+    details: str = Field(default="", description="Additional details about the URL")
+
+
+class URLSafetyResult(BaseModel):
+    urls_found: list[str] = Field(default_factory=list, description="URLs extracted from the text")
+    results: list[URLSafetyVerdict] = Field(default_factory=list, description="Per-URL safety verdicts")
+    any_unsafe: bool = Field(default=False, description="True if any URL was flagged as unsafe")
+
+
+class ScamAssessment(BaseModel):
+    is_likely_scam: bool = Field(description="Whether this appears to be a scam")
+    scam_type: Optional[str] = Field(default=None, description="Type of scam detected")
+    scam_confidence: float = Field(ge=0.0, le=1.0, description="Confidence in scam detection")
+    red_flags: list[str] = Field(default_factory=list, description="Red flags identified")
+
+
 class GatheredEvidence(BaseModel):
     pinecone_results: list[PineconeResult] = Field(default_factory=list)
     tavily_results: list[TavilyResult] = Field(default_factory=list)
     factcheck_results: list[FactCheckResult] = Field(default_factory=list)
     image_analysis: Optional[ImageAnalysisResult] = Field(default=None, description="Image analysis if an image was provided")
+    scam_analysis: Optional[ScamAnalysisResult] = Field(default=None, description="Scam pattern analysis results")
+    url_safety: Optional[URLSafetyResult] = Field(default=None, description="URL safety check results")
     errors: list[str] = Field(default_factory=list)
 
 

@@ -1,0 +1,502 @@
+[
+  {
+    "id": "scam-001",
+    "claim": "Microsoft called to say my computer has a virus and they need remote access to fix it",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "Microsoft never makes unsolicited phone calls about computer problems. This is a classic tech support scam where criminals pretend to be from Microsoft, Apple, or your ISP to trick you into giving them remote access to your computer, then steal your data or charge you for fake repairs.",
+    "red_flags": ["Unsolicited call about computer problem", "Request for remote access", "Claims to be from Microsoft"],
+    "sources": ["https://support.microsoft.com/en-us/windows/protect-yourself-from-tech-support-scams", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-002",
+    "claim": "A pop-up says my computer is infected and I need to call this number immediately",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "Legitimate virus alerts never tell you to call a phone number. These pop-ups are fake warnings designed to scare you into calling scammers who will try to get remote access to your computer or charge you for unnecessary software.",
+    "red_flags": ["Fake virus pop-up warning", "Phone number in alert", "Urgency to act immediately"],
+    "sources": ["https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams", "https://support.microsoft.com/en-us/windows/protect-yourself-from-tech-support-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-003",
+    "claim": "Your internet service will be disconnected unless you pay immediately with gift cards",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "No legitimate company asks for payment in gift cards. Your ISP will send written notices before disconnecting service and would never demand immediate gift card payment. This is a common tech support scam variation.",
+    "red_flags": ["Threat of service disconnection", "Demand for gift card payment", "Urgency to pay immediately"],
+    "sources": ["https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams", "https://consumer.ftc.gov/articles/gift-card-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-004",
+    "claim": "Apple Support says my iCloud account has been compromised and they need my password to secure it",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "Apple will never call you unsolicited and ask for your password. No legitimate tech company asks for your password over the phone. If you're concerned about your account, go directly to apple.com or call Apple's official number yourself.",
+    "red_flags": ["Unsolicited call claiming to be Apple", "Request for password", "Claim of compromised account"],
+    "sources": ["https://support.apple.com/en-us/102568", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-005",
+    "claim": "A technician says they detected suspicious activity on my router and needs to install security software",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "No one is monitoring your home router for suspicious activity and calling you about it. This is a tech support scam. The 'security software' they want to install is actually malware or remote access tools that let them control your computer.",
+    "red_flags": ["Unsolicited contact about router", "Request to install software", "Claim of suspicious activity"],
+    "sources": ["https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-006",
+    "claim": "Windows Defender has expired and I need to call this number to renew my subscription",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "Windows Defender (now called Microsoft Defender) is free and built into Windows — it doesn't have a subscription that expires. Any pop-up or email telling you to call a number to renew it is a scam.",
+    "red_flags": ["Fake subscription expiration", "Phone number to call", "Impersonating Microsoft product"],
+    "sources": ["https://support.microsoft.com/en-us/windows/protect-yourself-from-tech-support-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-007",
+    "claim": "Geek Squad sent an invoice for $399 auto-renewal that I need to call to cancel",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "Fake Geek Squad renewal invoices are one of the most common email scams. If you didn't sign up for a Geek Squad plan, ignore the email. The phone number leads to scammers who will try to get remote access to your computer or your bank information.",
+    "red_flags": ["Unexpected invoice", "Auto-renewal you didn't sign up for", "Phone number to cancel"],
+    "sources": ["https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams", "https://www.bestbuy.com/site/customer-service/protect-yourself-from-scams/pcmcat1657296498498.c"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-008",
+    "claim": "Amazon detected unauthorized purchases on my account and needs me to verify my payment info",
+    "category": "tech_support",
+    "verdict": "false",
+    "explanation": "Amazon won't call you about unauthorized purchases and ask for your payment details. If you're worried, log into your Amazon account directly (type amazon.com in your browser — don't click links in emails) and check your order history.",
+    "red_flags": ["Unsolicited call claiming to be Amazon", "Request for payment information", "Urgency about unauthorized purchases"],
+    "sources": ["https://www.aboutamazon.com/news/company-news/identify-and-avoid-scams", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-009",
+    "claim": "I met someone online who works on an oil rig and needs money for an emergency",
+    "category": "romance",
+    "verdict": "false",
+    "explanation": "The 'oil rig worker' is one of the most common romance scam personas. Scammers create fake profiles, build emotional connections over weeks or months, then fabricate emergencies to ask for money. Real romantic partners you've never met in person won't ask you for money.",
+    "red_flags": ["Online-only relationship", "Claims to work on oil rig or overseas", "Request for money for emergency"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/02/romance-scammers-favorite-lies-exposed", "https://www.fbi.gov/how-can-i-help-you/scams-and-safety/common-scams-and-crimes/romance-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-010",
+    "claim": "My online boyfriend who is a military officer overseas needs money for leave paperwork to come visit me",
+    "category": "romance",
+    "verdict": "false",
+    "explanation": "Military leave never requires payment. Scammers often pose as deployed military members because it explains why they can't meet in person or video chat. The U.S. military does not charge soldiers for leave, and soldiers have free access to communication tools.",
+    "red_flags": ["Claims to be military deployed overseas", "Cannot video chat", "Request for money for military paperwork"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/02/romance-scammers-favorite-lies-exposed", "https://www.military.com/spouse/military-life/military-romance-scams-what-you-need-know.html"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-011",
+    "claim": "Someone I met on a dating site needs money to pay customs fees to ship a package to me",
+    "category": "romance",
+    "verdict": "false",
+    "explanation": "Customs fees scams are a classic romance scam tactic. The 'package' doesn't exist, and the customs fees are fake. Legitimate customs fees, if they existed, would be paid by the shipper or collected by a recognized shipping company, not wired to an individual.",
+    "red_flags": ["Online relationship requesting money", "Customs or shipping fee request", "Overseas package that requires payment"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/02/romance-scammers-favorite-lies-exposed"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-012",
+    "claim": "I met someone wonderful online who wants me to invest in cryptocurrency with them",
+    "category": "romance",
+    "verdict": "false",
+    "explanation": "This is a 'pig butchering' scam — romance scammers build trust, then steer victims toward fake cryptocurrency investments. They may show you a fake trading platform with impressive 'returns.' The platform is fake, and any money you send goes straight to the scammers.",
+    "red_flags": ["Online romance leading to investment advice", "Cryptocurrency investment opportunity", "Fake trading platform with guaranteed returns"],
+    "sources": ["https://www.fbi.gov/how-can-i-help-you/scams-and-safety/common-scams-and-crimes/romance-scams", "https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/02/romance-scammers-favorite-lies-exposed"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-013",
+    "claim": "My online partner is stuck in another country and needs money for a plane ticket to come see me",
+    "category": "romance",
+    "verdict": "false",
+    "explanation": "Sending money for travel expenses to someone you've only met online is a huge red flag. Romance scammers always have reasons they can't meet — and always need money to overcome the obstacle. The trip never happens, and they'll have a new excuse and a new request.",
+    "red_flags": ["Cannot meet in person", "Request for travel money", "Repeated financial requests"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/02/romance-scammers-favorite-lies-exposed"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-014",
+    "claim": "My online love interest needs money for hospital bills after a sudden accident",
+    "category": "romance",
+    "verdict": "false",
+    "explanation": "Medical emergency money requests are a top romance scam tactic. Scammers fabricate emergencies to create urgency and emotional pressure. Real people in real emergencies have insurance, family, or local resources — they don't ask online acquaintances for money.",
+    "red_flags": ["Sudden emergency requiring money", "Emotional pressure to help", "Online-only relationship"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/02/romance-scammers-favorite-lies-exposed"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-015",
+    "claim": "A widow or widower I met online has an inheritance but needs help paying legal fees to access it",
+    "category": "romance",
+    "verdict": "false",
+    "explanation": "The 'inheritance that needs fees' story combines romance scam and advance-fee fraud tactics. There is no inheritance. Legitimate inheritances are handled by lawyers and courts — no one needs a stranger's help paying legal fees to access their own money.",
+    "red_flags": ["Inheritance requiring upfront fees", "Request to help with legal costs", "Online-only relationship with financial requests"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/02/romance-scammers-favorite-lies-exposed"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-016",
+    "claim": "The IRS is calling to say I owe back taxes and a warrant has been issued for my arrest",
+    "category": "government",
+    "verdict": "false",
+    "explanation": "The IRS never threatens arrest over the phone. They never demand immediate payment or call to collect without first sending a written notice by mail. If you owe taxes, the IRS sends letters — they don't threaten you with arrest on a phone call.",
+    "red_flags": ["Claim of arrest warrant for taxes", "Demand for immediate payment", "Phone call claiming to be IRS"],
+    "sources": ["https://www.irs.gov/newsroom/how-to-know-its-really-the-irs-calling-or-knocking-on-your-door", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-017",
+    "claim": "Social Security Administration called to say my Social Security number has been suspended due to suspicious activity",
+    "category": "government",
+    "verdict": "false",
+    "explanation": "Your Social Security number cannot be 'suspended.' The SSA will never call to threaten you, ask for payment, or request your SSN over the phone. This is one of the most common government impersonation scams targeting older adults.",
+    "red_flags": ["SSN 'suspended' claim", "Threat of legal action", "Request for personal information"],
+    "sources": ["https://oig.ssa.gov/scam-awareness/scam-alert/", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-018",
+    "claim": "Medicare is calling to send me a new card but they need to verify my Medicare number first",
+    "category": "government",
+    "verdict": "false",
+    "explanation": "Medicare will never call you unsolicited to verify your Medicare number. Scammers use this tactic to steal your Medicare ID, which they use for identity theft and fraudulent billing. If you need a new card, call 1-800-MEDICARE directly.",
+    "red_flags": ["Unsolicited Medicare call", "Request to verify Medicare number", "Offer of new Medicare card"],
+    "sources": ["https://www.medicare.gov/basics/reporting-medicare-fraud-and-abuse", "https://oig.hhs.gov/fraud/consumer-alerts/"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-019",
+    "claim": "A government agent says I need to pay a fine immediately using gift cards or I'll be arrested",
+    "category": "government",
+    "verdict": "false",
+    "explanation": "No government agency accepts gift cards as payment. Period. The government sends fines through official mail and accepts payment through standard methods. Anyone demanding gift cards is a scammer — 100% of the time.",
+    "red_flags": ["Government demanding gift card payment", "Threat of immediate arrest", "Urgency to pay now"],
+    "sources": ["https://consumer.ftc.gov/articles/gift-card-scams", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-020",
+    "claim": "The county sheriff's office called about a missed jury duty and I need to pay a fine over the phone",
+    "category": "government",
+    "verdict": "false",
+    "explanation": "Courts don't call about missed jury duty demanding phone payment. If you actually missed jury duty, you'd receive an official letter. Scammers use the threat of legal trouble for missing jury duty because it scares people into paying immediately.",
+    "red_flags": ["Phone call about missed jury duty", "Demand for phone payment", "Threat of legal consequences"],
+    "sources": ["https://www.uscourts.gov/services-forms/jury-service/juror-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-021",
+    "claim": "The DEA says my name was found on a package of illegal drugs and I need to verify my identity to clear my name",
+    "category": "government",
+    "verdict": "false",
+    "explanation": "The DEA and other law enforcement agencies do not call citizens to tell them their name was found on drug packages. This is a government impersonation scam designed to scare you into sharing personal information or sending money.",
+    "red_flags": ["Law enforcement impersonation", "Threat involving illegal drugs", "Request to verify identity over phone"],
+    "sources": ["https://www.dea.gov/press-releases/2022/09/15/dea-warns-about-extortion-scam", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-022",
+    "claim": "A utility company says my power will be shut off in one hour unless I make an immediate payment",
+    "category": "government",
+    "verdict": "false",
+    "explanation": "Utility companies are required to give advance written notice before shutting off service — they don't make threatening phone calls with one-hour deadlines. If you're unsure, hang up and call the number on your utility bill directly.",
+    "red_flags": ["Threat of immediate shutoff", "Extremely short deadline", "Demand for immediate payment"],
+    "sources": ["https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams", "https://consumer.ftc.gov/articles/scams-targeting-consumers"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-023",
+    "claim": "Grandma it's me I'm in jail and I need bail money right away please don't tell mom and dad",
+    "category": "grandparent",
+    "verdict": "false",
+    "explanation": "This is the classic 'grandparent scam.' Scammers call pretending to be a grandchild in trouble, often with a fake lawyer on the line. They count on your love and worry to make you act fast. Always verify by calling your grandchild directly on their known phone number.",
+    "red_flags": ["Urgent plea from supposed grandchild", "Request for bail money", "Instruction not to tell other family"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/07/grandparent-scams", "https://www.fbi.gov/how-can-i-help-you/scams-and-safety/common-scams-and-crimes"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-024",
+    "claim": "Your grandson was in a car accident in another state and needs money wired for medical bills",
+    "category": "grandparent",
+    "verdict": "false",
+    "explanation": "Scammers use car accident stories to create panic. They may even know your grandchild's name from social media. Before sending any money, hang up and call your grandchild directly. If they don't answer, call their parents. Real emergencies can wait 5 minutes for verification.",
+    "red_flags": ["Car accident emergency", "Request to wire money", "Grandchild in another state"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/07/grandparent-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-025",
+    "claim": "A lawyer called saying my grandchild was arrested abroad and needs money for legal fees and to keep it confidential",
+    "category": "grandparent",
+    "verdict": "false",
+    "explanation": "The 'arrested abroad' variant adds a fake lawyer to make the scam seem more legitimate. Real lawyers don't cold-call grandparents demanding wire transfers. And a real legal situation would involve the embassy, not a random phone call asking for secrecy.",
+    "red_flags": ["Fake lawyer calling", "Grandchild arrested abroad", "Request for confidentiality and money"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/07/grandparent-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-026",
+    "claim": "Your nephew needs money sent via Zelle right now because he's stranded and his phone is broken",
+    "category": "grandparent",
+    "verdict": "false",
+    "explanation": "Scammers create scenarios where the family member can't be reached to verify the story — broken phone, lost wallet, etc. If someone says they're a family member in trouble, hang up and call that person directly. If you can't reach them, call another family member.",
+    "red_flags": ["Family member stranded", "Can't be reached to verify", "Urgency to send money via payment app"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/07/grandparent-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-027",
+    "claim": "I got a call saying my grandchild needs money for bail and I should send it via Bitcoin ATM",
+    "category": "grandparent",
+    "verdict": "false",
+    "explanation": "No bail system accepts Bitcoin. This combines the grandparent scam with cryptocurrency to make the money untraceable. Courts accept cash bail, bail bonds, or sometimes credit cards — never cryptocurrency from a Bitcoin ATM.",
+    "red_flags": ["Bail money via Bitcoin ATM", "Untraceable payment method", "Emotional urgency about grandchild"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/07/grandparent-scams", "https://consumer.ftc.gov/articles/what-know-about-cryptocurrency-and-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-028",
+    "claim": "AI-generated voice of my grandchild called asking for emergency money",
+    "category": "grandparent",
+    "verdict": "false",
+    "explanation": "Scammers now use AI to clone voices from social media videos. Even if it sounds exactly like your grandchild, it could be fake. Always hang up and call your grandchild back on their real number. Set up a family code word that only your family knows for emergencies.",
+    "red_flags": ["Voice sounds like family member", "Emergency money request", "Pressure not to verify"],
+    "sources": ["https://www.ftc.gov/news-events/data-visualizations/data-spotlight/2023/07/grandparent-scams", "https://www.fbi.gov/how-can-i-help-you/scams-and-safety/common-scams-and-crimes"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-029",
+    "claim": "Congratulations you have won the Spanish National Lottery and need to pay a processing fee to claim your prize",
+    "category": "lottery",
+    "verdict": "false",
+    "explanation": "You can't win a lottery you didn't enter. There is no 'Spanish National Lottery' that contacts foreign winners. All lottery scams follow the same pattern: you 'won' something, but need to pay fees before you can collect. Real lotteries deduct fees from winnings.",
+    "red_flags": ["Won lottery you didn't enter", "Foreign lottery", "Processing fee required to claim prize"],
+    "sources": ["https://consumer.ftc.gov/articles/fake-prize-sweepstakes-and-lottery-scams", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-030",
+    "claim": "You've been selected to receive a $500,000 grant from the government but need to pay the tax upfront",
+    "category": "lottery",
+    "verdict": "false",
+    "explanation": "The government doesn't randomly select people for grants, and legitimate grants never require upfront payment. If you have to pay money to receive money, it's a scam. Government grants require applications and are awarded for specific purposes.",
+    "red_flags": ["Unsolicited government grant", "Upfront tax payment required", "Random selection for large sum"],
+    "sources": ["https://consumer.ftc.gov/articles/fake-prize-sweepstakes-and-lottery-scams", "https://www.usa.gov/grants"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-031",
+    "claim": "Publishers Clearing House says I won $1 million and they need my bank info to deposit the prize",
+    "category": "lottery",
+    "verdict": "false",
+    "explanation": "Publishers Clearing House (PCH) delivers major prizes in person with their famous Prize Patrol — they don't call or email asking for bank information. Scammers impersonate PCH because it's a trusted name. PCH will never ask you to pay fees or share bank details to claim a prize.",
+    "red_flags": ["PCH impersonation", "Request for bank information", "Prize notification via phone or email"],
+    "sources": ["https://consumer.ftc.gov/articles/fake-prize-sweepstakes-and-lottery-scams", "https://pch.com/sweepstakes-scam-alerts"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-032",
+    "claim": "I received a check for $5,000 from a sweepstakes and need to wire back $500 for taxes before I can cash it",
+    "category": "lottery",
+    "verdict": "false",
+    "explanation": "This is a fake check scam. The check looks real and may even clear temporarily, but it's fraudulent. When the bank discovers it's fake (which can take weeks), you'll owe the full amount back — plus the $500 you wired to the scammers is gone forever.",
+    "red_flags": ["Unexpected check received", "Requirement to wire money back", "Overpayment scheme"],
+    "sources": ["https://consumer.ftc.gov/articles/fake-checks", "https://consumer.ftc.gov/articles/fake-prize-sweepstakes-and-lottery-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-033",
+    "claim": "You've won a free cruise vacation but need to pay port fees and taxes to claim your trip",
+    "category": "lottery",
+    "verdict": "false",
+    "explanation": "Free cruise offers that require upfront fees are always scams. Legitimate companies don't charge fees to claim prizes. The 'cruise' either doesn't exist or comes with so many hidden costs and restrictions that it's worthless.",
+    "red_flags": ["Free vacation requiring fees", "Upfront payment for prize", "Time pressure to act"],
+    "sources": ["https://consumer.ftc.gov/articles/fake-prize-sweepstakes-and-lottery-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-034",
+    "claim": "You won a car in a raffle and need to pay $2,000 in delivery and registration fees",
+    "category": "lottery",
+    "verdict": "false",
+    "explanation": "Winning a car you never entered a raffle for is a clear scam signal. Even in legitimate raffles, delivery and registration fees are never thousands of dollars paid upfront to the organizer. This is an advance-fee scam using a car as bait.",
+    "red_flags": ["Won raffle you didn't enter", "Large upfront fees for delivery", "Prize requires payment to claim"],
+    "sources": ["https://consumer.ftc.gov/articles/fake-prize-sweepstakes-and-lottery-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-035",
+    "claim": "Your bank account has been compromised please click this link to verify your identity and secure your account",
+    "category": "phishing",
+    "verdict": "false",
+    "explanation": "Banks don't send emails or texts with links asking you to verify your identity. This is a phishing scam — the link leads to a fake website that looks like your bank but steals your login credentials. Always go directly to your bank's website by typing the URL yourself.",
+    "red_flags": ["Urgent security alert via email/text", "Link to verify identity", "Threat of account compromise"],
+    "sources": ["https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-036",
+    "claim": "Your Netflix subscription payment failed click here to update your billing information",
+    "category": "phishing",
+    "verdict": "false",
+    "explanation": "Netflix and other streaming services are commonly impersonated in phishing emails. If your payment actually failed, Netflix will show a notice when you log in. Don't click email links — open Netflix directly in your browser to check your account status.",
+    "red_flags": ["Payment failed notification", "Link to update billing info", "Impersonating popular service"],
+    "sources": ["https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams", "https://help.netflix.com/en/node/65674"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-037",
+    "claim": "USPS says your package cannot be delivered and you need to update your address through this link",
+    "category": "phishing",
+    "verdict": "false",
+    "explanation": "Fake package delivery texts and emails are extremely common phishing scams. USPS, UPS, and FedEx don't text you links to 'update your address.' If you're expecting a package, track it directly on the carrier's official website.",
+    "red_flags": ["Package delivery notification with link", "Request to update personal info", "Impersonating shipping company"],
+    "sources": ["https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams", "https://www.usps.com/help/scams.htm"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-038",
+    "claim": "Your email account will be deactivated in 24 hours unless you confirm your password",
+    "category": "phishing",
+    "verdict": "false",
+    "explanation": "Email providers don't threaten to deactivate your account and ask for your password via email. This is a phishing scam designed to steal your email credentials, which gives scammers access to all your other accounts through password resets.",
+    "red_flags": ["Account deactivation threat", "Password confirmation request", "Artificial 24-hour deadline"],
+    "sources": ["https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-039",
+    "claim": "PayPal detected unusual activity on your account click here to confirm your identity",
+    "category": "phishing",
+    "verdict": "false",
+    "explanation": "PayPal phishing emails are very common and can look extremely convincing. PayPal will never ask you to click an email link to confirm your identity. If you're concerned, open a new browser tab, go to paypal.com directly, and log in to check your account.",
+    "red_flags": ["Unusual activity alert", "Link to confirm identity", "PayPal impersonation"],
+    "sources": ["https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams", "https://www.paypal.com/us/security/report-suspicious-messages"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-040",
+    "claim": "Your Amazon order has shipped click here to track it",
+    "category": "phishing",
+    "verdict": "false",
+    "explanation": "If you didn't order anything from Amazon, this is a phishing email. Even if you did order something, don't click links in emails — go to amazon.com directly and check 'Your Orders.' Phishing links lead to fake sites designed to steal your login credentials.",
+    "red_flags": ["Unexpected order notification", "Link to track order", "Amazon impersonation"],
+    "sources": ["https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams", "https://www.aboutamazon.com/news/company-news/identify-and-avoid-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-041",
+    "claim": "Your bank needs you to verify recent transactions by entering your debit card PIN",
+    "category": "phishing",
+    "verdict": "false",
+    "explanation": "Your bank will never ask for your PIN via email, text, or phone. Your PIN is something only you should know. Banks have their own fraud detection systems and will freeze suspicious transactions — they don't need you to enter your PIN to verify them.",
+    "red_flags": ["Request for PIN number", "Bank impersonation", "Transaction verification scam"],
+    "sources": ["https://consumer.ftc.gov/articles/how-recognize-and-avoid-phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-042",
+    "claim": "Invest in this new cryptocurrency and get guaranteed 500% returns in 30 days",
+    "category": "investment",
+    "verdict": "false",
+    "explanation": "No legitimate investment guarantees returns — especially not 500%. Guaranteed returns are the #1 sign of investment fraud. All real investments carry risk, and anyone who says otherwise is either lying or running a Ponzi scheme.",
+    "red_flags": ["Guaranteed high returns", "Unrealistic timeframe", "Cryptocurrency investment pressure"],
+    "sources": ["https://www.sec.gov/investor/pubs/howtoavoidfraud.htm", "https://consumer.ftc.gov/articles/what-know-about-cryptocurrency-and-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-043",
+    "claim": "This exclusive investment opportunity is only available for the next 48 hours and spots are limited",
+    "category": "investment",
+    "verdict": "false",
+    "explanation": "Legitimate investments don't use high-pressure sales tactics with artificial deadlines. Scammers create urgency to prevent you from doing research or consulting a financial advisor. Any real investment opportunity will still be there after you take time to think about it.",
+    "red_flags": ["Artificial time pressure", "Exclusive limited opportunity", "High-pressure tactics"],
+    "sources": ["https://www.sec.gov/investor/pubs/howtoavoidfraud.htm", "https://www.finra.org/investors/protect-your-money/fraud"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-044",
+    "claim": "Put your retirement savings into this risk-free gold and silver investment for maximum returns",
+    "category": "investment",
+    "verdict": "false",
+    "explanation": "There's no such thing as a 'risk-free' investment with 'maximum returns.' Precious metals investments have real risks, and scammers specifically target retirees because they have savings. Always consult a licensed, independent financial advisor before making major investment decisions.",
+    "red_flags": ["Risk-free claim", "Targeting retirement savings", "Maximum returns promise"],
+    "sources": ["https://www.sec.gov/investor/pubs/howtoavoidfraud.htm", "https://www.cftc.gov/LearnAndProtect/AdvisoriesAndArticles/preciousmetals_fraud.html"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-045",
+    "claim": "Join our forex trading program and earn $10,000 per week from home with no experience needed",
+    "category": "investment",
+    "verdict": "false",
+    "explanation": "Forex (foreign exchange) trading is legitimate but extremely complex and risky. Promises of easy, guaranteed income with no experience are classic investment scam hallmarks. Professional traders lose money regularly — the idea that beginners earn $10K/week is absurd.",
+    "red_flags": ["Guaranteed income with no experience", "Specific high dollar amounts promised", "Work from home investment scheme"],
+    "sources": ["https://www.cftc.gov/LearnAndProtect/AdvisoriesAndArticles/fraudadv_forex.html", "https://www.sec.gov/investor/pubs/howtoavoidfraud.htm"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-046",
+    "claim": "This new AI trading bot has a 99% win rate and will double your money every month",
+    "category": "investment",
+    "verdict": "false",
+    "explanation": "No trading bot has a 99% win rate. If it did, the creator would be the richest person alive and wouldn't be selling it to you. AI trading scams use buzzwords like 'artificial intelligence' and 'machine learning' to sound sophisticated, but they're just stealing your money.",
+    "red_flags": ["Unrealistic win rate claims", "Money doubling promises", "AI/technology buzzwords to sound legitimate"],
+    "sources": ["https://www.sec.gov/investor/pubs/howtoavoidfraud.htm", "https://www.cftc.gov/LearnAndProtect/AdvisoriesAndArticles/index.htm"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-047",
+    "claim": "Please donate to help hurricane victims through this GoFundMe link we just set up",
+    "category": "charity",
+    "verdict": "false",
+    "explanation": "After natural disasters, fake charity scams explode. Scammers set up fake GoFundMe pages, create fake charity websites, and make emotional appeals. Always donate through established charities like the Red Cross, and verify any charity at give.org or charitynavigator.org.",
+    "red_flags": ["Urgent disaster relief appeal", "Unverified crowdfunding link", "Newly created charity"],
+    "sources": ["https://consumer.ftc.gov/articles/before-giving-charity", "https://www.ftc.gov/news-events/topics/identity-theft/phishing-scams"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-048",
+    "claim": "Support our veterans fund by donating over the phone with your credit card right now",
+    "category": "charity",
+    "verdict": "false",
+    "explanation": "Fake veteran charities are one of the most common charity scams. Scammers use emotional appeals about veterans to pressure phone donations. Legitimate charities don't pressure you for immediate credit card donations over the phone. Check charitynavigator.org before donating.",
+    "red_flags": ["Phone solicitation for donations", "Pressure for immediate credit card payment", "Emotional appeal using veterans"],
+    "sources": ["https://consumer.ftc.gov/articles/before-giving-charity", "https://www.charitynavigator.org/"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-049",
+    "claim": "A charity is going door-to-door collecting cash donations for children with cancer",
+    "category": "charity",
+    "verdict": "false",
+    "explanation": "While some legitimate charities do door-to-door campaigns, collecting cash at the door is a red flag. Legitimate charities provide written materials, are registered, and typically accept checks or online donations. Ask for their charity registration number and verify at give.org.",
+    "red_flags": ["Door-to-door cash collection", "Emotional appeal for sick children", "No written documentation provided"],
+    "sources": ["https://consumer.ftc.gov/articles/before-giving-charity", "https://give.org/"],
+    "date_added": "2025-01-15"
+  },
+  {
+    "id": "scam-050",
+    "claim": "Our church is collecting donations via wire transfer for a mission trip to help orphans overseas",
+    "category": "charity",
+    "verdict": "false",
+    "explanation": "Wire transfer requests are a major red flag even from seemingly legitimate organizations. Scammers sometimes impersonate churches or religious organizations. Verify directly with your church leadership in person, and donate through the church's established channels, not wire transfers.",
+    "red_flags": ["Wire transfer donation request", "Religious organization impersonation", "Overseas mission appeal"],
+    "sources": ["https://consumer.ftc.gov/articles/before-giving-charity"],
+    "date_added": "2025-01-15"
+  }
+]

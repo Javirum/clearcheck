@@ -44,9 +44,24 @@ def init_db() -> None:
             validation_passed INTEGER NOT NULL,
             validation_issues TEXT NOT NULL,
             num_sources_consulted INTEGER NOT NULL,
-            response_time_seconds REAL
+            response_time_seconds REAL,
+            scam_detected INTEGER DEFAULT 0,
+            scam_type TEXT,
+            scam_confidence REAL,
+            scam_red_flags TEXT
         )
     """)
+    # Add scam columns to existing tables (safe to run repeatedly)
+    for col, col_type in [
+        ("scam_detected", "INTEGER DEFAULT 0"),
+        ("scam_type", "TEXT"),
+        ("scam_confidence", "REAL"),
+        ("scam_red_flags", "TEXT"),
+    ]:
+        try:
+            conn.execute(f"ALTER TABLE audit_log ADD COLUMN {col} {col_type}")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
     conn.commit()
     conn.close()
 
@@ -70,8 +85,16 @@ def log_check(
         "pinecone_count": len(evidence.pinecone_results),
         "tavily_count": len(evidence.tavily_results),
         "factcheck_count": len(evidence.factcheck_results),
+        "scam_flags_count": len(evidence.scam_analysis.red_flags_detected) if evidence.scam_analysis else 0,
+        "urls_checked": len(evidence.url_safety.urls_found) if evidence.url_safety else 0,
         "errors": evidence.errors,
     }
+
+    scam = verdict.scam_assessment
+    scam_detected = 1 if scam and scam.is_likely_scam else 0
+    scam_type = scam.scam_type if scam else None
+    scam_confidence = scam.scam_confidence if scam else None
+    scam_red_flags = json.dumps(scam.red_flags) if scam else None
 
     conn = _get_connection()
     cursor = conn.execute(
@@ -80,8 +103,9 @@ def log_check(
             timestamp, claim, verdict, confidence, explanation,
             sources, educational_tip, reasoning_chain,
             evidence_summary, validation_passed, validation_issues,
-            num_sources_consulted, response_time_seconds
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            num_sources_consulted, response_time_seconds,
+            scam_detected, scam_type, scam_confidence, scam_red_flags
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             datetime.now(timezone.utc).isoformat(),
@@ -97,6 +121,10 @@ def log_check(
             json.dumps(validation.issues),
             num_sources,
             response_time,
+            scam_detected,
+            scam_type,
+            scam_confidence,
+            scam_red_flags,
         ),
     )
     conn.commit()

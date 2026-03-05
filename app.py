@@ -91,11 +91,20 @@ def _build_check_response(verdict, validation, evidence, elapsed):
             "web_search_results": len(evidence.tavily_results),
             "published_fact_checks": len(evidence.factcheck_results),
             "image_analyzed": evidence.image_analysis is not None,
+            "scam_flags_detected": len(evidence.scam_analysis.red_flags_detected) if evidence.scam_analysis else 0,
+            "urls_checked": len(evidence.url_safety.urls_found) if evidence.url_safety else 0,
             "errors": evidence.errors,
         },
         "validation_passed": validation.is_valid,
         "response_time_seconds": round(elapsed, 1),
     }
+    if verdict.scam_assessment:
+        response["scam_assessment"] = {
+            "is_likely_scam": verdict.scam_assessment.is_likely_scam,
+            "scam_type": verdict.scam_assessment.scam_type,
+            "scam_confidence": verdict.scam_assessment.scam_confidence,
+            "red_flags": verdict.scam_assessment.red_flags,
+        }
     if evidence.image_analysis:
         response["image_analysis"] = {
             "description": evidence.image_analysis.description,
